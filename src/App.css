@@ -1,80 +1,218 @@
+/*---------------------------------------------------------- 
+------------------------------------------------------------  
+                        APP 
+------------------------------------------------------------  
+------------------------------------------------------------  
+*/
 .App {
-  text-align: center;
-  margin: 0;
-  height: 100vh;
-  width: 100vw;
-  background: url('./res/stockBG.jpeg') no-repeat center center fixed; 
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-  background-size: cover;
-
-}
-
-
-
-/* LOGIN PAGE */
-
-.login-page-container{
+    text-align: center;
     margin: 0;
     height: 100vh;
     width: 100vw;
-    background-color: rgba(1, 1, 1, 0.7);
-    display: grid;
-    grid-template-rows: 1.2fr 1fr;
-}
-.login-page-title{
-    padding-top: 0.5em;
-    margin: 0;
+    background: url('./res/images/stockBG.jpeg') no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+  
+  }
+  
+  
+  
+  /*---------------------------------------------------------- 
+  ------------------------------------------------------------  
+                          LOGIN PAGE 
+  ------------------------------------------------------------  
+  ------------------------------------------------------------  
+  */
+  .login-page-container{
+      margin: 0;
+      height: 100vh;
+      width: 100vw;
+      background-color: rgba(1, 1, 1, 0.7);
+      display: grid;
+      grid-template-rows: 1.2fr 1fr;
+  }
+  .login-page-title{
+      padding-top: 0.5em;
+      margin: 0;
+      font-family: 'sofia_problack';
+      font-size: 8em;
+      color: #1ED660;
+  }
+  .logo{
+      margin-top: 1em;
+      height: 10em;
+      width: 10em;
+  }
+  
+  #spotify-login-tip{
+      margin: 0;
+      font-family: 'sofia_problack';
+      font-size: 3.5em;
+      padding-bottom: 1em;
+      color: white;
+  }
+  #spotify-login-button-container
+  {
+      background-color: transparent;
+      border: solid rgba(30, 214, 96, 1) 2px;
+      cursor: pointer !important;
+      color:white;
+      transition-delay:0s, 0s;
+      transition-duration:0.4s, 0.4s;
+      transition-property:border-color, background-color;
+      transition-timing-function:ease, ease;
+      
+      padding: 1em 3.5em;
+      border-radius: 4em;
+  }
+  #spotify-login-button-container:hover
+  {
+      background-color: rgba(30, 214, 96, 1);
+      border: solid rgba(30, 214, 96, 1) 2px;
+      cursor: pointer !important;
+      color:white;
+      transition-delay:0s, 0s;
+      transition-duration:0.4s, 0.4s;
+      transition-property:border-color, background-color;
+      transition-timing-function:ease, ease;
+      
+      padding: 1em 3.5em;
+      border-radius: 4em;
+  }
+  
+  #spotify-login-button{
+      font-family: 'sofia_prolight';
+      font-size: 1.8em;
+  }
+  /*---------------------------------------------------------*/
+  
+  
+  
+  
+  
+  /*---------------------------------------------------------- 
+  ------------------------------------------------------------  
+                          SESSION TYPE PAGE 
+  ------------------------------------------------------------  
+  ------------------------------------------------------------  
+  */
+  .header-logo{
+      height: 5em;
+      width: 5em;
+  }
+  .header-title{
     font-family: 'sofia_problack';
-    font-size: 8em;
+    font-size: 3em;
+    padding: 0.2em;
     color: #1ED660;
-}
-.logo{
-    margin-top: 1em;
-    height: 10em;
-    width: 10em;
-}
+  }
+  
+  .session-buttons{
+      width: 50%;
+      border-radius: 2em;
+      background: #1ED660;
+      margin: 0 auto;
+      text-align: center;
+      
+  }
+  .button-text{
+      margin: auto;
+  }
+
+  .card-info{
+    font-family: 'sofia_proregular';
+    font-size: 1.5em;
+    padding: 0 0.5em;
+    color: black;
+  }
 
 
-
-#spotify-login-tip{
-    margin: 0;
+  .divider{
+      height: 0.2em;
+      background-color: black;
+      width: 80%;
+      margin: 0 auto;
+  }
+  .card-title{
+      margin: auto;
     font-family: 'sofia_problack';
-    font-size: 3.5em;
-    padding-bottom: 1em;
+    font-size: 3.1em;
+
+  }
+
+  .session-container{
+      display: grid;
+      height: 100vh;
+      width: 100vw;
+      background: rgba(0,0,0,0.7);
+      grid-template-rows: 1fr 3.5fr;
+  }
+  .session-title{
+      display: grid;
+      grid-template-columns: auto 1fr;
+      margin: auto;
+      justify-content: center;
+      align-items: center;
+  }
+  .session-header{
+      margin: 1em auto;
+  }
+  #session-info{
+    font-family: 'sofia_problack';
+    font-size: 2.5em;
+    padding-top: 1.5em;
     color: white;
-}
-#spotify-login-button-container
-{
-    background-color: transparent;
-    border: solid rgba(30, 214, 96, 1) 2px;
-    cursor: pointer !important;
-    color:white;
+  }
+  .session-types{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      justify-content: center;
+      margin: 1em auto;
+      
+
+  }
+  .session-types-card{
+      width: 23em;
+      height: 30em;
+      padding: 1em;
+      border-radius: 0.5em;
+      background-color: white;
+      color: rgba(30, 214, 96);
+      display: grid;
+      margin: 1em;
+      grid-template-rows: 0.8fr 0.3fr 1.5fr 2fr;
+      transition-delay:0s, 0s;
+      transition-duration:0.4s, 0.4s;
+      transition-property:color, background-color;
+      transition-timing-function:ease, ease;
+      
+      
+  }
+  
+  .session-types-card:hover{
+    background-color: rgba(30, 214, 96);
+    border-color: #1ED660;
     transition-delay:0s, 0s;
     transition-duration:0.4s, 0.4s;
-    transition-property:border-color, background-color;
+    transition-property:color, background-color;
     transition-timing-function:ease, ease;
-    
-    padding: 1em 3.5em;
-    border-radius: 4em;
-}
-#spotify-login-button-container:hover
-{
-    background-color: rgba(30, 214, 96, 1);
-    border: solid rgba(30, 214, 96, 1) 2px;
-    cursor: pointer !important;
-    color:white;
-    transition-delay:0s, 0s;
-    transition-duration:0.4s, 0.4s;
-    transition-property:border-color, background-color;
-    transition-timing-function:ease, ease;
-    
-    padding: 1em 3.5em;
-    border-radius: 4em;
+    cursor: pointer;
+    color: white;
+    border: 1px solid black;
 }
 
-#spotify-login-button{
-    font-family: 'sofia_prolight';
-    font-size: 1.8em;
-}
+/* .session-types-card:hover ~ .card-title {
+    color: white;
+} */
+
+  /*
+
+  for mobile, change: 
+  -header logo
+  -sf
+  -sf
+  -sf
+
+  */

@@ -29,3 +29,14 @@ body {
     font-style: normal;
 
 }
+
+@font-face {
+    font-family: 'sofia_proregular';
+    src:
+         url('./res/fonts/sofia_pro_regular-webfont.ttf')  format('truetype'),
+         url('./res/fonts/sofia_pro_regular-webfont.woff2') format('woff2'),
+         url('./res/fonts/sofia_pro_regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
