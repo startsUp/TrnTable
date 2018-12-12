@@ -26,8 +26,8 @@ const spotifyApi = new SpotifyWebApi()
 // )
 
 class App extends Component {
-    constructor(){
-		super()
+    constructor(props){
+		super(props)
 		const params = this.getHashParams()
 		const token = params.access_token
 		if (token) {
@@ -37,6 +37,7 @@ class App extends Component {
 		this.state = {
           loggedIn: token ? true : false,
           page: token ? 'sessionType':'login',
+          dbRef: this.props.dbRef
         }
         
     }

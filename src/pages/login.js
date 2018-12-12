@@ -12,8 +12,8 @@ class Login extends Component {
 			</div>
 			<div>
 				<div id='spotify-login-tip'>Let's Get Started</div>
-				<a id='spotify-login-button-container' href='https://jukebox-2952e.firebaseapp.com/login'>
-					<span id='spotify-login-button'>
+				<a className='button-container' href='https://jukebox-2952e.firebaseapp.com/login'>
+					<span id='spotify-button'>
 						Login with spotify
 					</span>
 				</a>

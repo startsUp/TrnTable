@@ -53,7 +53,7 @@
       padding-bottom: 1em;
       color: white;
   }
-  #spotify-login-button-container
+  .button-container
   {
       background-color: transparent;
       border: solid rgba(30, 214, 96, 1) 2px;
@@ -67,7 +67,7 @@
       padding: 1em 3.5em;
       border-radius: 4em;
   }
-  #spotify-login-button-container:hover
+  .button-container:hover
   {
       background-color: rgba(30, 214, 96, 1);
       border: solid rgba(30, 214, 96, 1) 2px;
@@ -82,8 +82,8 @@
       border-radius: 4em;
   }
   
-  #spotify-login-button{
-      font-family: 'sofia_prolight';
+  #spotify-button{
+      font-family: 'sofia_proregular';
       font-size: 1.8em;
   }
   /*---------------------------------------------------------*/
@@ -177,7 +177,7 @@
       width: 23em;
       height: 30em;
       padding: 1em;
-      border-radius: 0.5em;
+      border-radius: 1em;
       background-color: white;
       color: rgba(30, 214, 96);
       display: grid;
@@ -193,7 +193,6 @@
   
   .session-types-card:hover{
     background-color: rgba(30, 214, 96);
-    border-color: #1ED660;
     transition-delay:0s, 0s;
     transition-duration:0.4s, 0.4s;
     transition-property:color, background-color;
@@ -202,7 +201,51 @@
     color: white;
     border: 1px solid black;
 }
+/*          ROOM          */
 
+.room-card{
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-content: center;
+    margin: 1em auto;
+}
+.room-card-title{
+    font-family: 'sofia_problack';
+    font-size: 2.5em;
+    color: white;
+    padding-top: 1em;
+}
+#room-code-card{
+    display: grid;
+    justify-items: center;
+    grid-template-rows: 1fr 0.5fr 0.5fr 0.5fr 1fr;
+}
+
+#room-code-input{
+    font-family: 'sofia_problack';
+    font-size: 1.8em;
+    text-align: center;
+    border-radius: 1em;
+    outline: none;
+    border:none;
+    text-transform:uppercase;
+    
+}
+
+#room-text-tip{
+    font-family: 'sofia_proregular';
+    font-size: 1.8em; 
+    color: white;
+    padding-top: 1em;
+}
+
+#room-text-tip:invalid {
+    border: 2px solid red;
+}
+
+#continue-button{
+    height: 4em;
+}
 /* .session-types-card:hover ~ .card-title {
     color: white;
 } */
