@@ -58,8 +58,8 @@ const SessionCards = props => (
         </div> 
 )
 class SessionType extends Component {
-    constructor(){
-        super()
+    constructor(props){
+        super(props)
         this.state = {
             sessionType: null, 
             roomCode: null,
@@ -78,21 +78,47 @@ class SessionType extends Component {
     }
 
     pickSession = (session) => {
-        console.log(session)
         var roomCode = ''
         if(session === 'host') roomCode = this.generateRandomString(4)
-
-        
-        this.setState({sessionType: session, roomCode: roomCode})
+        if(session !== this.state.sessionType)
+            this.setState({sessionType: session})
         //update state with room code
+        var dbRef = this.props.dbRef
+        dbRef.collection('rooms').doc(roomCode).get()
+            .then((document) => {
+                if(document.exists)
+                    this.pickSession(session)
+                else
+                    this.createRoom(roomCode)
+            })
+            .catch((err) => console.log(err))
     }
+
+    createRoom = (roomCode) => {
+        this.setState({roomCode: roomCode})
+        
+        //initiate room in firestore
+        var dbRef = this.props.dbRef
+        dbRef.collection('rooms').doc(roomCode).set({
+            createdTimestamp: new Date()
+        })
+        .then((snapshot) => {
+            dbRef.collection('rooms')
+                    .doc(roomCode)
+                    .collection('users')
+                    .doc(this.props.user.id)
+                    .set({joinedTimestamp: new Date()})
+        })
+
+    }
+
 
     validateInput = (input) => {
         if (input.length === 4) this.enterRoom(input)
         else this.setState({isInputValid: false})
     }
     enterRoom = (roomCode = this.state.roomCode) => {
-        console.log(roomCode)
+        this.props.changePage('dashboard')
     }
 
     inputSubmit = (e) => {

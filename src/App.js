@@ -37,7 +37,7 @@ class App extends Component {
 		this.state = {
           loggedIn: token ? true : false,
           page: token ? 'sessionType':'login',
-          dbRef: this.props.dbRef
+          roomRef: null
         }
         
     }
@@ -56,7 +56,8 @@ class App extends Component {
     }
     
     changePage = (page) => {
-        this.setState({page: {page}})
+        console.log(page)
+        this.setState({page: page})
     }
     // getHashParams() {
     //     var hashParams = {}
@@ -72,11 +73,11 @@ class App extends Component {
   render() {
     var page = <Login/>
     var currentPage = this.state.page
-
+    var user = {name: 'shardool', id: 'sd3xxfqsad2'}
     if(currentPage === 'sessionType') 
-        page = <SessionType/>
+        page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} user={user} />
     else if(currentPage === 'dashboard') 
-        page = <Dashboard/>
+        page = <Dashboard user={user}/>
 
     console.log(currentPage === 'dashboard')
     return (

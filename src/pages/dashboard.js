@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import '../App.css'
+import appIcon from '../res/images/logo.webp'
 
 
 const Track = props => (
@@ -9,8 +10,8 @@ const Track = props => (
             <img src={props.albumArtURL}/>
         </div>
         <div className='track-info'>
-            <div id='track-name' className='track-info-text'>{props.trackName}</div>
-            <div id='track-artists' className='track-info-text'>{props.trackArtists}</div>
+            <div id='track-name' className='track-info-text'>{props.name}</div>
+            <div id='track-artists' className='track-info-text'>{props.artist}</div>
         </div>
     </div>
      
@@ -25,20 +26,29 @@ class Dashboard extends Component {
     constructor(props){
         super(props)
         this.state = {
-            queue : [{trackName: Kids, trackArtists: [MGMT], albumArt: ''}]
+            queue : [{id: '6Z8R6UsFuGXGtiIxiD8ISb',name: 'Safe and Sound', artist: 'Capital Cities', albumArt: 'https://i.scdn.co/image/5b5b97a268f39426c8bf1ada36606e6fcbb317eb'}]
         }
     }
     render() {
-    return (
-		<div className='dashboard-container'>
-            <div className='dashboard-header'>
-                 
-            </div>
-            <div className='dashboard-queue-container'>
-                
-            </div>
-		</div> 
-    )
+        const tracks = this.state.queue.map((track) => (
+                <Track key={track.id} name={track.name} artist={track.artist} albumArtURL={track.albumArt}/>
+            ))
+
+        return (
+            <div className='dashboard-container'>
+                <div className='dashboard-header'>
+                    <div>
+                        {appIcon}
+                    </div>
+                    <div>
+                        {this.props.user.name}'s Session
+                    </div>
+                </div>
+                <div className='dashboard-queue-container'>
+                    {tracks}
+                </div>
+            </div> 
+        )
 	}
 }	
 export default Dashboard
