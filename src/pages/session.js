@@ -19,8 +19,8 @@ const RoomCodeCard = props => (
                 {props.cardTitle}
             </div>
             {props.id==='host' ?
-                <input className='room-code-input' value={props.roomCode} readOnly/>:
-                <input id={props.inputID? '':'input-invalid'} className='room-code-input'  onKeyPress={props.onEnter} maxLength='4'/>
+                <input id='room-code-input' value={props.roomCode} readOnly/>:
+                <input style={props.inputID ? {}:{'border': '2px solid red'}} id='room-code-input'  onKeyPress={props.onEnter} maxLength='4'/>
             }
             <div id='room-text-tip'> {props.cardInfo}</div>
             <a id='continue-button' className='button-container' onClick={props.onClick}>
@@ -63,7 +63,7 @@ class SessionType extends Component {
         this.state = {
             sessionType: null, 
             roomCode: null,
-            isInputValid: true,
+            input: {isValid: true, error: ''}
         }
     }
     
@@ -79,12 +79,17 @@ class SessionType extends Component {
 
     pickSession = (session) => {
         var roomCode = ''
-        if(session === 'host') roomCode = this.generateRandomString(4)
+        
         if(session !== this.state.sessionType)
             this.setState({sessionType: session})
+            
+        if(session === 'host') 
+            roomCode = this.generateRandomString(4)
+        else
+            return
+
         //update state with room code
-        var dbRef = this.props.dbRef
-        dbRef.collection('rooms').doc(roomCode).get()
+        this.getRoom(roomCode)
             .then((document) => {
                 if(document.exists)
                     this.pickSession(session)
@@ -112,18 +117,62 @@ class SessionType extends Component {
 
     }
 
-
-    validateInput = (input) => {
-        if (input.length === 4) this.enterRoom(input)
-        else this.setState({isInputValid: false})
+    getRoom = (roomCode) => {
+        return this.props.dbRef.collection('rooms').doc(roomCode).get()
     }
-    enterRoom = (roomCode = this.state.roomCode) => {
-        this.props.changePage('dashboard')
+
+    validateInput = () => {
+        var input = document.getElementById('room-code-input').value
+        if (input.length === 4) this.enterRoom(input)
+        else 
+        {
+            this.setState({
+                input: {isValid: false, 
+                        error: 'Room code should be 4 digits and should not contain any special characters'}
+            })
+        }
+
+    }
+
+
+
+    enterRoom = (roomCode) => {
+        
+
+        // check if the room exists 
+
+        if(this.state.sessionType === 'host')
+            this.props.changePage('trackImport')
+        else
+        {
+            console.log(roomCode)
+            this.props.setRoomCode(roomCode)
+            //validate with database
+            this.getRoom(roomCode)
+            .then((document) => {
+                if(document.exists) 
+                    this.props.changePage('dashboard')
+                else {
+                    console.log(document)
+                    this.setState({
+                        input: {isValid: false, 
+                                error: 'Room does not exist'}
+                    })
+                }
+            })
+            .catch((err) => console.log(err))
+            
+        }
+            
+        
     }
 
     inputSubmit = (e) => {
-        if (e.key === 'Enter') this.validateInput(e.target.value)
+        if (e.key === 'Enter') this.validateInput()
     }
+
+
+
     render() {
         var card = null
         var headerInfo = null
@@ -134,7 +183,7 @@ class SessionType extends Component {
             var buttonText = this.state.sessionType==='host' ? 'Start' : 'Join'
             card = <RoomCodeCard id={this.state.sessionType} roomCode={this.state.roomCode}  
                     cardTitle={title} cardInfo={info} icon={icon} buttonText={buttonText} 
-                    onEnter={this.inputSubmit} inputID={this.state.isInputValid} onClick={this.enterRoom}/>
+                    onEnter={this.inputSubmit} inputID={this.state.input.isValid} onClick={this.validateInput}/>
         }
             
         else{

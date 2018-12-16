@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import Login from './pages/login'
 import Dashboard from './pages/dashboard'
 import SessionType from './pages/session'
+import ImportTrack from './pages/trackImport'
 import './App.css'
 import SpotifyWebApi from 'spotify-web-api-js'
 const spotifyApi = new SpotifyWebApi()
@@ -29,7 +30,9 @@ class App extends Component {
     constructor(props){
 		super(props)
 		const params = this.getHashParams()
-		const token = params.access_token
+        const token = params.access_token
+        const refreshToken = params.refresh_token
+        
 		if (token) {
 		  spotifyApi.setAccessToken(token)
         }
@@ -37,11 +40,29 @@ class App extends Component {
 		this.state = {
           loggedIn: token ? true : false,
           page: token ? 'sessionType':'login',
-          roomRef: null
+          roomRef: null,
+          user: null,
+          token: token,
+          refreshToken: refreshToken
         }
         
     }
+    componentDidMount = () => {
+        if(this.state.token){
+            spotifyApi.getMe().then((userData)  => {
+                this.setState({user: userData})
+            })  
+            
+            
+            fetch('https://jukebox-2952e.firebaseapp.com/refresh_token?refresh_token=' + this.state.refreshToken)
+                .then((res) => console.log(res))
+                .catch((err) => console.log(err))
+        }
+        
+    }
+  
     
+
     getHashParams = () => {
 		var hashParams = {}
 		var e, r = /([^&=]+)=?([^&]*)/g,
@@ -56,9 +77,13 @@ class App extends Component {
     }
     
     changePage = (page) => {
-        console.log(page)
         this.setState({page: page})
     }
+
+    setRoomCode = (roomCode) => {
+        this.setState({roomRef: roomCode})
+    }
+
     // getHashParams() {
     //     var hashParams = {}
     //     var e, r = /([^&=]+)=?([^&]*)/g,
@@ -73,11 +98,16 @@ class App extends Component {
   render() {
     var page = <Login/>
     var currentPage = this.state.page
-    var user = {name: 'shardool', id: 'sd3xxfqsad2'}
+    var user = this.state.user
     if(currentPage === 'sessionType') 
-        page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} user={user} />
+        page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} 
+                            user={user} setRoomCode={this.setRoomCode} />
     else if(currentPage === 'dashboard') 
-        page = <Dashboard user={user}/>
+        page = <Dashboard user={user} 
+                apiRef={spotifyApi} dbRef={this.props.dbRef} 
+                roomCode={this.state.roomRef}/>
+    else if(currentPage === 'trackImport')
+        page = <ImportTrack user={user} apiRef={spotifyApi} roomCode={this.state.roomRef}/>
 
     console.log(currentPage === 'dashboard')
     return (

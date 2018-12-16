@@ -221,7 +221,7 @@
     grid-template-rows: 1fr 0.5fr 0.5fr 0.5fr 1fr;
 }
 
-.room-code-input{
+#room-code-input{
     font-family: 'sofia_problack';
     font-size: 1.8em;
     text-align: center;
@@ -231,7 +231,7 @@
     text-transform:uppercase;
     
 }
-#input-invalid{
+.input-invalid{
     border: 2px solid red;
 }
 
