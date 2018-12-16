@@ -235,11 +235,15 @@
     border: 2px solid red;
 }
 
-#room-text-tip{
+.room-text-tip{
     font-family: 'sofia_proregular';
     font-size: 1.8em; 
     color: white;
     padding-top: 1em;
+}
+
+#room-text-error{
+    color: red;
 }
 
 

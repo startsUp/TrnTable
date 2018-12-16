@@ -18,11 +18,13 @@ const RoomCodeCard = props => (
             <div className='room-card-title'>
                 {props.cardTitle}
             </div>
+          
             {props.id==='host' ?
                 <input id='room-code-input' value={props.roomCode} readOnly/>:
-                <input style={props.inputID ? {}:{'border': '2px solid red'}} id='room-code-input'  onKeyPress={props.onEnter} maxLength='4'/>
+                <input style={props.inputID ? {}:{'border': '2px solid red'}} id='room-code-input' onKeyPress={props.onEnter} maxLength='4'/>
             }
-            <div id='room-text-tip'> {props.cardInfo}</div>
+            
+            <div id={props.inputID ? '' : 'room-text-error'} className='room-text-tip'> {props.inputID ? props.cardInfo : props.error} </div>
             <a id='continue-button' className='button-container' onClick={props.onClick}>
                 <span id='spotify-button'>
                     Let's Get This Party Started
@@ -123,15 +125,23 @@ class SessionType extends Component {
 
     validateInput = () => {
         var input = document.getElementById('room-code-input').value
-        if (input.length === 4) this.enterRoom(input)
-        else 
+    
+        if(input.length < 4)
         {
             this.setState({
                 input: {isValid: false, 
-                        error: 'Room code should be 4 digits and should not contain any special characters'}
+                        error: 'Room code should be 4 digits❗'}
             })
         }
-
+        else if (!(/^[a-zA-Z0-9]+$/.test(input)))
+        {
+            this.setState({
+                input: {isValid: false, 
+                        error: 'Room should only have letters and numbers❗'}
+            })
+        }
+        else 
+            this.enterRoom(input)
     }
 
 
@@ -153,10 +163,10 @@ class SessionType extends Component {
                 if(document.exists) 
                     this.props.changePage('dashboard')
                 else {
-                    console.log(document)
+                    
                     this.setState({
                         input: {isValid: false, 
-                                error: 'Room does not exist'}
+                                error: 'Room does not exist❗'}
                     })
                 }
             })
@@ -183,7 +193,8 @@ class SessionType extends Component {
             var buttonText = this.state.sessionType==='host' ? 'Start' : 'Join'
             card = <RoomCodeCard id={this.state.sessionType} roomCode={this.state.roomCode}  
                     cardTitle={title} cardInfo={info} icon={icon} buttonText={buttonText} 
-                    onEnter={this.inputSubmit} inputID={this.state.input.isValid} onClick={this.validateInput}/>
+                    onEnter={this.inputSubmit} inputID={this.state.input.isValid} onClick={this.validateInput}
+                    error={this.state.input.error}/>
         }
             
         else{
