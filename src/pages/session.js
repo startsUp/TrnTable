@@ -155,7 +155,7 @@ class SessionType extends Component {
             this.props.changePage('trackImport')
         else
         {
-            console.log(roomCode)
+       
             this.props.setRoomCode(roomCode)
             //validate with database
             this.getRoom(roomCode)

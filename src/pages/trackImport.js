@@ -4,6 +4,17 @@ import appIcon from '../res/images/logo.webp'
 
 
 class ImportTrack extends Component {
+    constructor(props){
+        super(props)
+        this.state = {
+            playlist : [],
+            tracksToAdd : [],
+            selectedPlaylist : null,
+            playlistTracks : [],
+        }
+    }
+
+    
     render() {
     return (
 		<div className='login-page-container'>

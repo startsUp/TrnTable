@@ -51,17 +51,19 @@ class App extends Component {
         if(this.state.token){
             spotifyApi.getMe().then((userData)  => {
                 this.setState({user: userData})
-            })  
+            })
+            .catch((err) => console.log(err)) //get access token here
             
             
-            fetch('https://jukebox-2952e.firebaseapp.com/refresh_token?refresh_token=' + this.state.refreshToken)
-                .then((res) => console.log(res))
-                .catch((err) => console.log(err))
         }
         
     }
   
-    
+    refreshAccessToken = () => {
+        fetch('https://jukebox-2952e.firebaseapp.com/refresh_token?refresh_token=' + this.state.refreshToken)
+                .then((res) => console.log(res))
+                .catch((err) => console.log(err))
+    }
 
     getHashParams = () => {
 		var hashParams = {}
@@ -78,10 +80,56 @@ class App extends Component {
     
     changePage = (page) => {
         this.setState({page: page})
+        if(page === 'trackImport') 
+            createPlaylist(this.getDate() + ' TrnTable Session')
+    }
+    getDate = () => {
+        var monthNames = [
+          "January", "February", "March",
+          "April", "May", "June", "July",
+          "August", "September", "October",
+          "November", "December"
+        ];
+      
+        var date = new Date()
+        var day = date.getDate()
+        var monthIndex = date.getMonth()
+        var year = date.getFullYear()
+      
+        return day + ' ' + monthNames[monthIndex] + ' ' + year
+      }
+      
+    searchForTrack = (track, options, callback) => {
+       spotifyApi.searchTracks(track, options, callback)
+    }
+
+    getUserPlaylists = (user, options, callback) => {
+        spotifyApi.getUserPlaylists(user.id, options, callback)
+    }
+
+    getPlaylistTracks = (user, playlistID, options, callback) => {
+        spotifyApi.getPlaylistTracks(user.id, playlistID, options, callback)
     }
 
     setRoomCode = (roomCode) => {
         this.setState({roomRef: roomCode})
+    }
+
+    createPlaylist = (name) => {
+        var apiRef = this.props.apiRef
+        apiRef.createPlaylist(this.props.user.id, {name: name})
+                .then((playlist) => {
+                    var playlistObj = {href: playlist.href, uri: playlist.uri, id: playlist.id}
+                    this.setState({playlistRef: playlistObj}) //store playlist object in state
+
+                    this.props.dbRef
+                                .collection('rooms')
+                                .doc(this.props.roomCode)
+                                .collection('playlist')
+                                .set(playlistObj)
+
+                }) 
+                .catch((err) => console.log(err))
     }
 
     // getHashParams() {

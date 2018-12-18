@@ -27,27 +27,45 @@ class Dashboard extends Component {
         super(props)
         this.state = {
             queue : [{id: '6Z8R6UsFuGXGtiIxiD8ISb',name: 'Safe and Sound', artist: 'Capital Cities', albumArt: 'https://i.scdn.co/image/5b5b97a268f39426c8bf1ada36606e6fcbb317eb'}],
-            playlistRef: null
+            playlistRef: null,
+            fetchTimestamp: null, //do (= new Date()) after initial fetch of queue
+            unsubscribe: null,
+            tracks: []
         }
     }
 
     
 
-    createPlaylist = (name) => {
-        var apiRef = this.props.apiRef
-        apiRef.createPlaylist(this.props.user.id, {name: name})
-                .then((playlist) => {
-                    var playlistObj = {href: playlist.href, uri: playlist.uri, id: playlist.id}
-                    this.setState({playlistRef: playlistObj}) //store playlist object in state
+    componentDidMount = () => {
 
-                    this.props.dbRef
-                                .collection('rooms')
-                                .doc(this.props.roomCode)
-                                .collection('playlist')
-                                .set(playlistObj)
+        var getFirstFetch = await this.getTracks()
+        var unsubscribe = databaseRef.collection('tracksInRoom').doc(this.props.roomCode).collection('tracks').orderBy('addedTimestamp').startAt(this.state.fetchTimestamp)
+                .onSnapshot((snapshot) => {
+                    console.log(snapshot.docs)
 
-                }) 
-                .catch((err) => console.log(err))
+                        snapshot.docChanges().forEach((change) => {
+                            if (change.type === "added") {
+                                var doc = change.doc
+                                let source = doc.metadata.hasPendingWrites ? 'Local' : 'Server'
+                                if (source === 'Server') {
+                                    this.setState({ //update local queue
+                                        tracks: [] 
+                                    })
+                                } else {
+                                // Do nothing, it's a local update so ignore it
+                                }
+                                
+                            }   
+                        })
+                    })
+        this.setState({unsubscribe: unsubscribe})
+    }
+
+    getTracks = () => {
+        return this.props.dbRef.collection('tracksInRoom').doc(this.props.roomCode).collection('tracks').get()
+    }
+    componentWillUnmount = () => {
+        this.state.unsubscribe()
     }
     render() {
         const tracks = this.state.queue.map((track) => (
