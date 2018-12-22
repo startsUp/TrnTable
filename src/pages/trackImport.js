@@ -3,6 +3,12 @@ import '../App.css'
 import appIcon from '../res/images/logo.webp'
 
 
+//A SearchResultSection can be used to show track, album and artist results
+const SearchResultSection = props => (
+    <div>
+        
+    </div>
+)
 class ImportTrack extends Component {
     constructor(props){
         super(props)

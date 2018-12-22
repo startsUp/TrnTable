@@ -12,6 +12,10 @@ const Track = props => (
             <div id='track-name' className='track-info-text'>{props.name}</div>
             <div id='track-artists' className='track-info-text'>{props.artist}</div>
         </div>
+        {props.added ? 
+            <div onClick={props.remove}> <div>➖</div> </div> : 
+            <div onClick={props.add}> <div>➕</div> </div>
+        }
     </div>
      
 )
@@ -38,8 +42,8 @@ class Dashboard extends Component {
 
     componentDidMount = () => {
 
-        var getFirstFetch = await this.getTracks()
-        var unsubscribe = databaseRef.collection('tracksInRoom').doc(this.props.roomCode).collection('tracks').orderBy('addedTimestamp').startAt(this.state.fetchTimestamp)
+       // var getFirstFetch = this.getTracks()
+        var unsubscribe = this.props.dbRef.collection('tracksInRoom').doc(this.props.roomCode).collection('tracks').orderBy('addedTimestamp').startAt(this.state.fetchTimestamp)
                 .onSnapshot((snapshot) => {
                     console.log(snapshot.docs)
 

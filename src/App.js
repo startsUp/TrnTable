@@ -36,7 +36,7 @@ class App extends Component {
 		if (token) {
 		  spotifyApi.setAccessToken(token)
         }
-        console.log(token)
+        
 		this.state = {
           loggedIn: token ? true : false,
           page: token ? 'sessionType':'login',
@@ -69,7 +69,7 @@ class App extends Component {
 		var hashParams = {}
 		var e, r = /([^&=]+)=?([^&]*)/g,
 			q = window.location.hash.substring(1)
-		console.log(q)
+		
 		e = r.exec(q)
 		while (e) {
 		   hashParams[e[1]] = decodeURIComponent(e[2])
@@ -81,7 +81,7 @@ class App extends Component {
     changePage = (page) => {
         this.setState({page: page})
         if(page === 'trackImport') 
-            createPlaylist(this.getDate() + ' TrnTable Session')
+            this.createPlaylist(this.getDate() + ' TrnTable Session')
     }
     getDate = () => {
         var monthNames = [
@@ -154,10 +154,11 @@ class App extends Component {
         page = <Dashboard user={user} 
                 apiRef={spotifyApi} dbRef={this.props.dbRef} 
                 roomCode={this.state.roomRef}/>
-    else if(currentPage === 'trackImport')
+    else if(currentPage === 'trackImport') 
         page = <ImportTrack user={user} apiRef={spotifyApi} roomCode={this.state.roomRef}/>
 
-    console.log(currentPage === 'dashboard')
+    
+    
     return (
       <div className='App'>
             {page}
