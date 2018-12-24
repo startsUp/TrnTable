@@ -18,7 +18,36 @@
   }
   
   
+  .icon-container, .list-icon-container{
+    height: 2em;
+    width: 2em;
+    margin: auto 0;
+    -webkit-transition: transform 0.3s ease;
+    -moz-transition: transform 0.3s ease;
+    -o-transition: transform 0.3s ease;
+    transition: transform 0.3s ease;
+    
+  }
   
+  .heading{
+    font-family: 'sofia_problack';
+    font-size: 1.8em; 
+    color: white;
+  }
+  #menu-icon, #list-icon, #list-icon-added:hover{
+      fill: white;
+      cursor: pointer;
+  }
+
+  #icon-active{
+      transform: rotate(90deg);
+      cursor: pointer;
+      fill: #1ED660;
+  }
+
+  #menu-icon:hover, #list-icon:hover, #list-icon-added{
+    fill: #1ED660;
+}
   /*---------------------------------------------------------- 
   ------------------------------------------------------------  
                           LOGIN PAGE 
@@ -147,7 +176,7 @@
       height: 100vh;
       width: 100vw;
       background: rgba(0,0,0,0.7);
-      grid-template-rows: 7em 6em auto;
+      grid-template-rows: 0.5fr 0.7fr 12fr;
   }
   .session-title{
       display: grid;
@@ -161,7 +190,7 @@
   }
   #session-info{
     font-family: 'sofia_problack';
-    font-size: 2.5em;
+    font-size: 2em;
     margin: auto;
     color: white;
   }
@@ -266,6 +295,42 @@
 
   /*---------------------------------------------------------- 
   ------------------------------------------------------------  
+                          LIST 
+  ------------------------------------------------------------  
+  ------------------------------------------------------------  
+  */
+
+  .list-container{
+      display: grid;
+      overflow: auto;
+      padding: 0.5em 2em;
+  }
+
+  .list-item{
+      display: grid;
+      grid-template-columns: 10% 80% 10%;
+      padding: 0.5em;
+      color: white;
+      font-family: 'sofia_proregular';
+  }
+  .list-content-container{
+      text-align: left;
+      margin: auto 0;
+      padding: 0.5em;
+  }
+  .list-content{
+    font-size: 1.7em;
+    padding-bottom: 0.1em;
+  }
+
+  .list-selection-container{
+      margin: auto;
+      
+  }
+
+  
+  /*---------------------------------------------------------- 
+  ------------------------------------------------------------  
                           TRACK IMPORT 
   ------------------------------------------------------------  
   ------------------------------------------------------------  
@@ -274,20 +339,33 @@
 .import-container{
     display: grid;
     margin: 0 auto;
-    width: 60em;
+    width: 80em;
     height: auto;
     background: rgba(1, 1, 1, 0.8);
     border-radius: 1em;
-    grid-template-rows: 1fr 0.1fr 6fr 0.7fr;
+    grid-template-rows: 4em 1em 36em;
     padding: 1em;
     
 
 }
 
+.import-main-container{
+    display: grid;
+    
+}
+
+#import-w-sidebar{
+    grid-template-columns: 2fr 9fr;
+}
+
+#import-head{
+    padding: 1em 0 0.5em 0;
+}
+
 #import-header-container{
     display: grid;
-    grid-template-columns: auto 20em;
-    justify-items: left;
+    grid-template-columns: 3em auto 19em;
+    justify-items: right;
     margin: auto 0;
 }
 
@@ -299,35 +377,38 @@
   border:none;
   width: 15em;
   padding: 0.5em 1em;
-  margin: auto;
+ 
 }  
 
-.import-footer-container{
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+.import-library-container{
+    
     border-radius: 1em;
-    background-color: white;
+    background: rgba(255,255,255,0.1);
+    
 }
 
 .import-library-button{
     cursor: pointer;
-    padding: 1em;
-    font-size: 1.8em;
+    padding: 0.5em;
+    margin: 1em;
+    font-size: 1.5em;
     border-radius: 0.5em;
+    color: white;
 }
 
 .import-library-button:hover{
     background-color: #1ED660;
+    
 }
 
 .show-queue-button{
     font-family: 'sofia_proregular';
     font-size: 1.2em;
     border-radius: 1em;
-    background: white;
+    background:white;
     width: auto;
     padding: 0.5em 1em;
-    margin-left: 1em;
+    
     cursor: pointer;
 }
 #active{

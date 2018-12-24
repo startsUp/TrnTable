@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import '../App.css'
 import appIcon from '../res/images/logo.webp'
 import List from './components/list'
-
+import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
 //A SearchResultSection can be used to show track, album and artist results
 const SearchResultSection = props => (
     <div>
@@ -19,25 +19,42 @@ const UserLibraryButton = props => (
         <div>{props.desc}</div>
     </div>
 )
+const LibrarySidebar = props => (
+    <div className='import-library-container'>
+        <div className='heading' id='import-head'> Your Library </div>
+        <Divider/>
+        <UserLibraryButton id='songs' desc='Songs' showLibrary={props.showLibrary}/>
+        <UserLibraryButton id='playlst' desc='Playlist' showLibrary={props.showLibrary}/>
+        <UserLibraryButton id='albums' desc='Albums' showLibrary={props.showLibrary}/>
+    </div>
+)
 const ImportContainer = props => (
     <div className='import-container'>
         <div id='import-header-container'>
-            <div className='show-queue-button' id={props.active && 'active'} onClick={props.showQueue}> Queue </div> 
+            <div className='icon-container'><MenuIcon id={props.showSidebar ? 'icon-active' : 'menu-icon'} onClick={props.toggleSidebar}/></div>
+            <div className='show-queue-button' id={props.active ? 'active': ''} onClick={props.showQueue}> Queue </div> 
             <input id='spotify-search-input' placeholder='Search... '/>
         </div>
         <Divider color='#1ED660' width='100%' height='0.05em'/>
-        <List emptyMessage={props.emptyMessage} items={props.list}/>
-        <div className='import-footer-container'>
+        <div className='import-main-container' id={props.showSidebar ? 'import-w-sidebar': ''}>
+            {props.showSidebar && <LibrarySidebar showLibrary={props.showLibrary} />} 
+            <List emptyMessage={props.emptyMessage} items={props.list} type={props.view} onAction={props.onAction}/>
+        </div>
+        
+        
+    </div>
+)
+
+/* <div className='import-footer-container'>
             <UserLibraryButton id='songs' desc='Songs' showLibrary={props.showLibrary}/>
             <UserLibraryButton id='playlst' desc='Playlist' showLibrary={props.showLibrary}/>
             <UserLibraryButton id='albums' desc='Albums' showLibrary={props.showLibrary}/>
-        </div>
-    </div>
-)
+    </div> */
 class ImportTrack extends Component {
     constructor(props){
         super(props)
         this.state = {
+            queue: [], //actual queue that gets updated when the user chooses to see it
             userSavedSongs: [],
             savedSongsOffset: 0,
             userPlaylists: [],
@@ -45,10 +62,11 @@ class ImportTrack extends Component {
             playlistTracks: [],
             userAlbums: [],
             albumOffset: 0,
-            tracksToAdd : [],
+            tracksToAdd : [], //cache 
             selectedPlaylist : null,
             showingQueue: true,
-            view: 'songs'
+            view: 'songs',
+            showSidebar: true
         }
     }
     componentDidMount = () => {
@@ -80,6 +98,10 @@ class ImportTrack extends Component {
             return tracks
         }
     }
+
+    listChange = (change, id, obj = null) => {
+        
+    }
     showLibrary = (type) => {
         if(type === 'songs' && this.state.savedSongsOffset === 0){
             this.props.apiRef.getMySavedTracks()
@@ -97,8 +119,18 @@ class ImportTrack extends Component {
             this.setState({albumOffset: 20})
         }
     }
-    showQueue = () => { 
+    moveTracksToQueue = () => {
+        const tracks = this.state.tracksToAdd
+        const updatedQueue = [...this.state.queue, this.state.tracks]
+        this.setState({tracksToAdd: [], queue: updatedQueue})
+    }
+    showQueue = () => {
+        this.moveTracksToQueue()
         this.setState({showQueue: true})
+    }
+
+    toggleSidebar = () => {
+        this.setState({showSidebar: !this.state.showSidebar})
     }
     render() {
         const headerInfo = <div id='session-info'>Before we start, let's add some music!</div>
@@ -116,7 +148,7 @@ class ImportTrack extends Component {
             list = this.state.userAlbums
         
         return (
-            <div className='session-container'>
+            <div className='session-container' id='import'>
                 <div className='session-header'>
                     <div className='session-title'>
                         <div><img className='header-logo' src={appIcon}/></div>
@@ -128,7 +160,11 @@ class ImportTrack extends Component {
                                 showQueue={this.showQueue}
                                 showLibrary={this.showLibrary} 
                                 emptyMessage={emptyMessage}
-                                list={list}/>
+                                list={list}
+                                view={view}
+                                showSidebar={this.state.showSidebar}
+                                toggleSidebar={this.toggleSidebar}
+                                onAction={this.listChange}/>
             </div> 
         )
 	}
