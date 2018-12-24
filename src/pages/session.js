@@ -210,8 +210,8 @@ class SessionType extends Component {
                     <div><img className='header-logo' src={appIcon}/></div>
                     <div className='header-title'>TrnTable</div>
                 </div>
-                {headerInfo}
             </div>
+            {headerInfo}
             {card}
 		</div> 
     )

@@ -9,10 +9,12 @@ body {
    margin: 0; 
 }
 
+
+
 @font-face {
     font-family: 'sofia_problack';
     src:
-        url('./res/fonts/sofia_pro_black-webfont.ttf')  format('truetype'),
+         url('./res/fonts/sofia_pro_black-webfont.ttf')  format('truetype'),
          url('./res/fonts/sofia_pro_black-webfont.woff2') format('woff2'),
          url('./res/fonts/sofia_pro_black-webfont.woff') format('woff');
     font-weight: normal;

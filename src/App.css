@@ -130,7 +130,7 @@
 
 
   .divider{
-      height: 0.2em;
+      height: 0.1em;
       background-color: black;
       width: 80%;
       margin: 0 auto;
@@ -147,7 +147,7 @@
       height: 100vh;
       width: 100vw;
       background: rgba(0,0,0,0.7);
-      grid-template-rows: 1fr 3.5fr;
+      grid-template-rows: 7em 6em auto;
   }
   .session-title{
       display: grid;
@@ -162,7 +162,7 @@
   #session-info{
     font-family: 'sofia_problack';
     font-size: 2.5em;
-    padding-top: 1.5em;
+    margin: auto;
     color: white;
   }
   .session-types{
@@ -264,8 +264,76 @@
 
   */
 
+  /*---------------------------------------------------------- 
+  ------------------------------------------------------------  
+                          TRACK IMPORT 
+  ------------------------------------------------------------  
+  ------------------------------------------------------------  
+  */
 
+.import-container{
+    display: grid;
+    margin: 0 auto;
+    width: 60em;
+    height: auto;
+    background: rgba(1, 1, 1, 0.8);
+    border-radius: 1em;
+    grid-template-rows: 1fr 0.1fr 6fr 0.7fr;
+    padding: 1em;
     
+
+}
+
+#import-header-container{
+    display: grid;
+    grid-template-columns: auto 20em;
+    justify-items: left;
+    margin: auto 0;
+}
+
+#spotify-search-input{
+  font-family: 'sofia_proregular';
+  font-size: 1.2em;
+  border-radius: 1em;
+  outline: none;
+  border:none;
+  width: 15em;
+  padding: 0.5em 1em;
+  margin: auto;
+}  
+
+.import-footer-container{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    border-radius: 1em;
+    background-color: white;
+}
+
+.import-library-button{
+    cursor: pointer;
+    padding: 1em;
+    font-size: 1.8em;
+    border-radius: 0.5em;
+}
+
+.import-library-button:hover{
+    background-color: #1ED660;
+}
+
+.show-queue-button{
+    font-family: 'sofia_proregular';
+    font-size: 1.2em;
+    border-radius: 1em;
+    background: white;
+    width: auto;
+    padding: 0.5em 1em;
+    margin-left: 1em;
+    cursor: pointer;
+}
+#active{
+    
+    background: #1ED660;
+}
   /*---------------------------------------------------------- 
   ------------------------------------------------------------  
                           DASHBOARD 

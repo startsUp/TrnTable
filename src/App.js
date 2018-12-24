@@ -39,7 +39,7 @@ class App extends Component {
         
 		this.state = {
           loggedIn: token ? true : false,
-          page: token ? 'sessionType':'login',
+          page: token ? 'trackImport':'login',
           roomRef: null,
           user: null,
           token: token,
@@ -105,10 +105,12 @@ class App extends Component {
 
     getUserPlaylists = (user, options, callback) => {
         spotifyApi.getUserPlaylists(user.id, options, callback)
+
     }
 
     getPlaylistTracks = (user, playlistID, options, callback) => {
         spotifyApi.getPlaylistTracks(user.id, playlistID, options, callback)
+        
     }
 
     setRoomCode = (roomCode) => {
@@ -116,8 +118,7 @@ class App extends Component {
     }
 
     createPlaylist = (name) => {
-        var apiRef = this.props.apiRef
-        apiRef.createPlaylist(this.props.user.id, {name: name})
+        spotifyApi.createPlaylist(this.state.user.id, {name: name})
                 .then((playlist) => {
                     var playlistObj = {href: playlist.href, uri: playlist.uri, id: playlist.id}
                     this.setState({playlistRef: playlistObj}) //store playlist object in state
@@ -132,17 +133,6 @@ class App extends Component {
                 .catch((err) => console.log(err))
     }
 
-    // getHashParams() {
-    //     var hashParams = {}
-    //     var e, r = /([^&=]+)=?([^&]*)/g,
-    //         q = window.location.hash.substring(1)
-    //     e = r.exec(q)
-    //     while (e) {
-    //     hashParams[e[1]] = decodeURIComponent(e[2])
-    //     e = r.exec(q)
-    //     }
-    //     return hashParams
-    // }
   render() {
     var page = <Login/>
     var currentPage = this.state.page
