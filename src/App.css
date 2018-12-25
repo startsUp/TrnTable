@@ -304,6 +304,7 @@
       display: grid;
       overflow: auto;
       padding: 0.5em 2em;
+      
   }
 
   .list-item{
@@ -317,6 +318,7 @@
       text-align: left;
       margin: auto 0;
       padding: 0.5em;
+      cursor: pointer;
   }
   .list-content{
     font-size: 1.7em;
@@ -325,7 +327,11 @@
 
   .list-selection-container{
       margin: auto;
-      
+  }
+
+  .list-item-image{
+      height: 64px;
+      width: 64px;
   }
 
   
@@ -392,29 +398,26 @@
     padding: 0.5em;
     margin: 1em;
     font-size: 1.5em;
-    border-radius: 0.5em;
+    border-radius: 2em;
     color: white;
 }
 
-.import-library-button:hover{
+.import-library-button:hover, .show-queue-button:hover, #active{
     background-color: #1ED660;
-    
+    color: black;
 }
 
 .show-queue-button{
     font-family: 'sofia_proregular';
     font-size: 1.2em;
-    border-radius: 1em;
-    background:white;
-    width: auto;
+    border-radius: 2em;
+    border: solid #1ED660 1px;
+    color: white;
     padding: 0.5em 1em;
     
     cursor: pointer;
 }
-#active{
-    
-    background: #1ED660;
-}
+
   /*---------------------------------------------------------- 
   ------------------------------------------------------------  
                           DASHBOARD 
