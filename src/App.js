@@ -3,6 +3,7 @@ import Login from './pages/login'
 import Dashboard from './pages/dashboard'
 import SessionType from './pages/session'
 import ImportTrack from './pages/trackImport'
+import SpotifyPlayer from './pages/components/spotifyPlayer'
 import './App.css'
 import SpotifyWebApi from 'spotify-web-api-js'
 const spotifyApi = new SpotifyWebApi()
@@ -39,7 +40,7 @@ class App extends Component {
         
 		this.state = {
           loggedIn: token ? true : false,
-          page: token ? 'trackImport':'login',
+          page: token ? 'player':'login',
           roomRef: null,
           user: null,
           token: token,
@@ -135,8 +136,9 @@ class App extends Component {
 
   render() {
     var page = <Login/>
-    var currentPage = this.state.page
-    var user = this.state.user
+    const currentPage = this.state.page
+    const user = this.state.user
+    console.log('user', user)
     if(currentPage === 'sessionType') 
         page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} 
                             user={user} setRoomCode={this.setRoomCode} />
@@ -146,6 +148,8 @@ class App extends Component {
                 roomCode={this.state.roomRef}/>
     else if(currentPage === 'trackImport') 
         page = <ImportTrack user={user} apiRef={spotifyApi} roomCode={this.state.roomRef}/>
+    else if(currentPage === 'player')
+        page = <SpotifyPlayer accessToken={this.state.token} user={this.state.user}/>
 
     
     
