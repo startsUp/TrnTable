@@ -8,7 +8,7 @@ const ListItem = props => (
         <div className='list-image'>
             <img className='list-item-image' src={props.item.iconURL}/>
         </div>
-        <div className='list-content-container' onClick={props.contentClick}>
+        <div className='list-content-container' onClick={() => props.contentClick(props.item)}>
             <div className='list-content'>
                 {props.item.content}   
             </div>
@@ -62,7 +62,7 @@ class List extends Component {
                                  contentClick={this.props.contentClick}/>)
             })
         }
-        const emptyMessage = <div className='room-text-tip'>
+        const emptyMessage = <div className='heading'>
                                 {this.props.emptyMessage}
                             </div>
        

@@ -109,8 +109,8 @@ class App extends Component {
     }
 
     getPlaylistTracks = (user, playlistID, options, callback) => {
-        spotifyApi.getPlaylistTracks(user.id, playlistID, options, callback)
-        
+        // spotifyApi.getPlaylistTracks(user.id, playlistID, options, callback)
+        // spotifyApi.getAlbumTracks(albumID, options)
     }
 
     setRoomCode = (roomCode) => {

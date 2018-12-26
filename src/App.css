@@ -301,7 +301,6 @@
   */
 
   .list-container{
-      display: grid;
       overflow: auto;
       padding: 0.5em 2em;
       

@@ -4,6 +4,7 @@ import appIcon from '../res/images/logo.webp'
 import List from './components/list'
 import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
 import placeholderIcon from '../res/images/spotifyIcon.png'
+import {ReactComponent as LoadingIcon} from '../res/images/loading.svg'
 //A SearchResultSection can be used to show track, album and artist results
 const SearchResultSection = props => (
     <div>
@@ -39,7 +40,7 @@ const ImportContainer = props => (
         <Divider color='#1ED660' width='100%' height='0.05em'/>
         <div className='import-main-container' id={props.showSidebar ? 'import-w-sidebar': ''}>
             {props.showSidebar && <LibrarySidebar showLibrary={props.showLibrary} view={props.view} />} 
-            <List emptyMessage={props.emptyMessage} items={props.list} 
+            <List emptyMessage={props.emptyMessage} items={props.list} contentClick={props.contentClick}
                   type={props.view} onAction={props.onAction} updateTracks={props.updateTracks}/>
         </div>
         
@@ -58,16 +59,20 @@ class ImportTrack extends Component {
         this.state = {
             queue: [], //actual queue that gets updated when the user chooses to see it
             userSavedSongs: [],
+            totalSavedSongs: null,
+            totalSavedPlaylist: null,
+            totalSavedAlbums: null,
             selectedSavedSongs: [],
             savedSongsOffset: 0,
             userPlaylists: [],
             playlistOffset: 0,
             playlistTracks: [],
+            currentPlaylist: [],
             userAlbums: [],
+            currentAlbum: [],
             albumOffset: 0,
             tracksToAdd : [], //cache 
             selectedPlaylist : null,
-            showingQueue: false,
             view: 'songs',
             showSidebar: true
         }
@@ -75,24 +80,41 @@ class ImportTrack extends Component {
     componentDidMount = () => {
         this.props.apiRef.getMySavedTracks({limit:50})
             .then(data => {
-                this.setState({userSavedSongs: this.parseData('songs', data.items), savedSongsOffset:50})
+                
+                this.setState({userSavedSongs: this.parseData('songs', data), 
+                                savedSongsOffset:50, totalSavedSongs: data.total})
             })
     }
 
-    parseData = (dataType, data) => {
-        if(dataType === 'songs')
+    parseData = (dataType, data, albumRef=null) => {
+        if(dataType === 'songs' || dataType === 'albumSongs')
         {
             var tracks = []
-            data.forEach(item => { 
-                var track = item.track  
+            data.items.forEach(item => { 
+                var track = item.track
+                var icon = null
+                var albumArt = null
+                var name = null
+                if(dataType === 'albumSongs'){
+                    track = item
+                    icon = albumRef.iconURL
+                    albumArt = albumRef.albumArt
+                    name = albumRef.name
+                }else{
+                    icon = track.album.images[2].url
+                    albumArt = track.album.images
+                    name = track.album.name
+                }
+                    
+
                 var artists = track.artists.map(elem => {return elem.name}).join(", ")
                 tracks.push({trackName: track.name,
                              content: track.name,
                              subContent: artists,
-                             iconURL: track.album.images[2].url, 
                              artists: artists,
-                             albumArt: track.album.images,
-                             albumName: track.album.name, 
+                             iconURL: icon,
+                             albumArt: albumArt,
+                             albumName: name, 
                              id: track.id, 
                              uri: track.uri})
             })
@@ -101,19 +123,21 @@ class ImportTrack extends Component {
         else if (dataType === 'playlist')
         {
             var playlists = []
-            data.forEach(item => { 
+           
+            data.items.forEach(item => { 
                 playlists.push({name: item.name,
                              content: item.name,
                              iconURL: item.images.length > 0 ? item.images[0].url : placeholderIcon, 
                              id: item.id, 
-                             uri: item.uri})
+                             uri: item.uri,
+                             ownerID: item.owner.id})
             })
             return playlists
         }
         else if (dataType === 'albums')
         {
             var albums = []
-            data.forEach(item => { 
+            data.items.forEach(item => { 
                 var album = item.album
                 var artists = album.artists.map(elem => {return elem.name}).join(", ")
                 albums.push({name: album.name,
@@ -121,6 +145,7 @@ class ImportTrack extends Component {
                              content: album.name,
                              subContent: artists,
                              iconURL: album.images[2].url,
+                             albumArt: album.images,
                              id: album.id,
                              totalTracks: album.total_tracks, 
                              uri: album.uri})
@@ -133,40 +158,93 @@ class ImportTrack extends Component {
     updateTracks = (tracks) => {
         this.setState({tracksToAdd: tracks})
     }
-    listChange = (change, id, obj = null) => {
-        
+    
+    showTracksFor = (item) => {
+        if(this.state.view === 'albums'){
+            if(this.state.currentAlbum.id !== item.id){
+                this.props.apiRef.getAlbumTracks(item.id, {limit:50})
+                    .then((data) => {
+                        console.log(item)
+                        this.setState({currentAlbum: {id: item.id, tracks: this.parseData('albumSongs', data, item)}, 
+                                        view:'albumTracks',})
+                    })
+            }else
+                this.setState({view: 'albumTracks'})
+            // this.props.apiRef.getPlaylistTracks(user.id, playlistID, options, callback 
+        }
+        else if (this.state.view === 'playlist'){
+            if(this.state.currentPlaylist.id !== item.id){
+                this.props.apiRef.getPlaylistTracks(item.ownerID, item.id, {limit:50})
+                    .then((data) => {
+                        this.setState({currentPlaylist: {id: item.id, tracks: this.parseData('songs', data)}, 
+                                        view:'playlistTracks'})
+                    })
+            }
+
+        }
     }
     showLibrary = (type) => {
         if(type === 'songs'){
-            this.props.apiRef.getMySavedTracks({offset: this.state.savedSongsOffset, limit:50})
-                .then(data =>
-                    this.setState({userSavedSongs: this.parseData(type, data.items), 
-                                   savedSongsOffset: this.savedSongsOffset+50, view: 'songs'}
-                    ))
+            
+            if(this.state.totalSavedSongs === null  || this.state.totalSavedSongs > this.state.savedSongsOffset)
+            {
+                this.setState({view: 'loading'})
+                this.props.apiRef.getMySavedTracks({offset: this.state.savedSongsOffset, limit:50})
+                .then(data =>{
+                    this.setState({userSavedSongs: this.parseData(type, data), 
+                        savedSongsOffset: this.savedSongsOffset+50, view:'songs', totalSavedSongs: data.total})
+                    
+                })
+            }
+            this.setState({view: 'songs'})
+            
+                    
+
         }
         else if (type === 'playlist'){
+            
+        if (this.state.totalSavedPlaylist === null || this.state.totalSavedPlaylist > this.state.playlistOffset){
+            this.setState({view: 'loading'})
             this.props.apiRef.getUserPlaylists({offset: this.state.playlistOffset, limit:50})
-                             .then(data =>
-                                this.setState({userPlaylists: this.parseData(type, data.items), 
-                                               playlistOffset: this.playlistOffset+50, view:'playlist'}
-                                ))
+                             .then(data =>{
+                                 
+                                this.setState({userPlaylists: this.parseData(type, data), 
+                                    playlistOffset: this.playlistOffset+50,view:'playlist',
+                                    totalSavedPlaylist:data.total}
+                     )
+                             })
+            }
+            this.setState({view: 'playlist'})
+                                
         }
-        else if (type === 'albums') { //albums
-            this.props.apiRef.getMySavedAlbums({offset: this.state.albumOffset, limit:50})
-                             .then(data =>
-                                this.setState({userAlbums: this.parseData(type, data.items), 
-                                               albumOffset: this.albumOffset+50, view:'albums'}
-                                ))
+        else if (type === 'albums'){
+            
+            if (this.state.totalSavedAlbums === null || this.state.totalSavedAlbums > this.state.albumOffset) { //albums
+                this.setState({view:'loading'})
+                this.props.apiRef.getMySavedAlbums({offset: this.state.albumOffset, limit:50})
+                                .then(data =>{
+                                    this.setState({userAlbums: this.parseData(type, data), view:'albums',
+                                        albumOffset: this.albumOffset+50, totalSavedAlbums: data.total}
+                        )
+                                })
+                                    
+            }
+            this.setState({view: 'albums'})
         }
     }
     moveTracksToQueue = () => {
         const tracks = this.state.tracksToAdd
-        const updatedQueue = [...this.state.queue, this.state.tracks]
-        this.setState({tracksToAdd: [], queue: updatedQueue})
+        if(tracks.length !== 0){
+            const updatedQueue = [...this.state.queue, this.state.tracks]
+            console.log(updatedQueue)
+            this.setState({tracksToAdd: [], queue: updatedQueue})
+        }
+        
     }
     showQueue = () => {
         this.moveTracksToQueue()
-        this.setState({showQueue: true})
+        
+        this.setState({view:'queue'})
     }
 
     toggleSidebar = () => {
@@ -179,15 +257,20 @@ class ImportTrack extends Component {
                             'Added songs will show up here' : 'No saved ' + this.state.view
         var list = []
         if (view === 'queue') 
-            list = this.state.tracksToAdd
+            list = this.state.queue
         else if(view === 'songs') 
             list = this.state.userSavedSongs
         else if(view === 'playlist')
             list = this.state.userPlaylists
         else if (view === 'albums')
             list = this.state.userAlbums
-        
-        console.log(this.state.userAlbums)
+        else if (view === 'loading')
+            emptyMessage = <LoadingIcon className='icon-container' id='menu-icon'/>
+        else if (view === 'albumTracks')
+            list = this.state.currentAlbum.tracks
+        else if (view === 'playlistTracks')
+            list = this.state.currentPlaylist.tracks
+
         return (
             <div className='session-container' id='import'>
                 <div className='session-header'>
@@ -197,7 +280,7 @@ class ImportTrack extends Component {
                     </div>
                 </div>
                 {headerInfo}
-                <ImportContainer active={this.state.showingQueue} 
+                <ImportContainer active={this.state.view === 'queue'} 
                                 showQueue={this.showQueue}
                                 showLibrary={this.showLibrary} 
                                 emptyMessage={emptyMessage}
@@ -205,7 +288,7 @@ class ImportTrack extends Component {
                                 view={view}
                                 showSidebar={this.state.showSidebar}
                                 toggleSidebar={this.toggleSidebar}
-                                onAction={this.listChange}
+                                contentClick={this.showTracksFor}
                                 updateTracks={this.updateTracks}/>
             </div> 
         )
