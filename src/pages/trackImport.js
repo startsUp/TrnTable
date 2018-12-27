@@ -41,7 +41,8 @@ const ImportContainer = props => (
         <div className='import-main-container' id={props.showSidebar ? 'import-w-sidebar': ''}>
             {props.showSidebar && <LibrarySidebar showLibrary={props.showLibrary} view={props.view} />} 
             <List emptyMessage={props.emptyMessage} items={props.list} contentClick={props.contentClick}
-                  type={props.view} onAction={props.onAction} updateTracks={props.updateTracks}/>
+                  type={props.view} selectable={(props.view !== 'playlist' && props.view !== 'albums')}
+                  updateTracks={props.updateTracks}/>
         </div>
         
         
@@ -67,9 +68,9 @@ class ImportTrack extends Component {
             userPlaylists: [],
             playlistOffset: 0,
             playlistTracks: [],
-            currentPlaylist: [],
+            currentPlaylist: {id:'', tracks:[]},
             userAlbums: [],
-            currentAlbum: [],
+            currentAlbum: {id:'', tracks:[]},
             albumOffset: 0,
             tracksToAdd : [], //cache 
             selectedPlaylist : null,
@@ -160,17 +161,17 @@ class ImportTrack extends Component {
     }
     
     showTracksFor = (item) => {
+        
         if(this.state.view === 'albums'){
             if(this.state.currentAlbum.id !== item.id){
                 this.props.apiRef.getAlbumTracks(item.id, {limit:50})
                     .then((data) => {
-                        console.log(item)
+                        
                         this.setState({currentAlbum: {id: item.id, tracks: this.parseData('albumSongs', data, item)}, 
                                         view:'albumTracks',})
                     })
             }else
                 this.setState({view: 'albumTracks'})
-            // this.props.apiRef.getPlaylistTracks(user.id, playlistID, options, callback 
         }
         else if (this.state.view === 'playlist'){
             if(this.state.currentPlaylist.id !== item.id){
@@ -180,6 +181,7 @@ class ImportTrack extends Component {
                                         view:'playlistTracks'})
                     })
             }
+            this.setState({view:'playlistTracks'})
 
         }
     }
@@ -203,18 +205,18 @@ class ImportTrack extends Component {
         }
         else if (type === 'playlist'){
             
-        if (this.state.totalSavedPlaylist === null || this.state.totalSavedPlaylist > this.state.playlistOffset){
-            this.setState({view: 'loading'})
-            this.props.apiRef.getUserPlaylists({offset: this.state.playlistOffset, limit:50})
-                             .then(data =>{
-                                 
-                                this.setState({userPlaylists: this.parseData(type, data), 
-                                    playlistOffset: this.playlistOffset+50,view:'playlist',
-                                    totalSavedPlaylist:data.total}
-                     )
-                             })
-            }
-            this.setState({view: 'playlist'})
+            if (this.state.totalSavedPlaylist === null || this.state.totalSavedPlaylist > this.state.playlistOffset){
+                this.setState({view: 'loading'})
+                this.props.apiRef.getUserPlaylists({offset: this.state.playlistOffset, limit:50})
+                                .then(data =>{
+                                    
+                                    this.setState({userPlaylists: this.parseData(type, data), 
+                                        playlistOffset: this.playlistOffset+50,view:'playlist',
+                                        totalSavedPlaylist:data.total}
+                        )
+                                })
+                }
+                this.setState({view: 'playlist'})
                                 
         }
         else if (type === 'albums'){
@@ -232,19 +234,55 @@ class ImportTrack extends Component {
             this.setState({view: 'albums'})
         }
     }
-    moveTracksToQueue = () => {
-        const tracks = this.state.tracksToAdd
-        if(tracks.length !== 0){
-            const updatedQueue = [...this.state.queue, this.state.tracks]
-            console.log(updatedQueue)
-            this.setState({tracksToAdd: [], queue: updatedQueue})
-        }
-        
+    isAlreadyInQueue = (track) => {
+      this.state.queue.forEach(queueTrack => {
+          if(queueTrack.id === track.id)
+            return true
+      })
+      return false
     }
     showQueue = () => {
-        this.moveTracksToQueue()
-        
-        this.setState({view:'queue'})
+        const {tracksToAdd, view, currentPlaylist, currentAlbum, userSavedSongs} = this.state
+        if(tracksToAdd.length === 0) 
+            return
+
+        var queue = []
+        var updatedQueue = this.state.queue.slice()
+        if(view === 'playlistTracks'){
+            currentPlaylist.tracks.forEach((track, indexVal) =>{
+                if(tracksToAdd.indexOf(indexVal) !== -1)
+                {
+                    if(!this.isAlreadyInQueue(track))
+                        queue.push(track)
+                }
+                    
+            })
+            updatedQueue.push(...queue)
+            this.setState({tracksToAdd: [], queue: updatedQueue, view: 'queue'})
+        }
+        else if(view === 'albumTracks'){
+            currentAlbum.tracks.forEach((track, indexVal) =>{
+                if(tracksToAdd.indexOf(indexVal) !== -1)
+                {
+                    if(!this.isAlreadyInQueue(track))
+                        queue.push(track)
+                }
+            })
+            updatedQueue.push(...queue)
+            this.setState({tracksToAdd: [], queue: updatedQueue, view: 'queue'})
+        }
+        else if(view === 'songs'){
+            userSavedSongs.forEach((track, indexVal) =>{
+                if(tracksToAdd.indexOf(indexVal) !== -1)
+                {
+                    if(!this.isAlreadyInQueue(track))
+                        queue.push(track)
+                }
+            })
+            updatedQueue.push(...queue)
+            this.setState({tracksToAdd: [], queue: updatedQueue, view: 'queue'})
+
+        }
     }
 
     toggleSidebar = () => {

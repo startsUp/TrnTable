@@ -30,6 +30,7 @@ class SpotifyPlayer extends Component {
   // when we receive a new update from the player
   onStateChanged(state) {
     // only update if we got a real state
+    console.log(state)
     if (state !== null) {
       const {
         current_track: currentTrack,

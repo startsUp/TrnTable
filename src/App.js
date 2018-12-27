@@ -40,7 +40,7 @@ class App extends Component {
         
 		this.state = {
           loggedIn: token ? true : false,
-          page: token ? 'player':'login',
+          page: token ? 'trackImport':'login',
           roomRef: null,
           user: null,
           token: token,

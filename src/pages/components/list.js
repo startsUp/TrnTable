@@ -17,21 +17,32 @@ const ListItem = props => (
             </div>
             
         </div>
-        <div className='list-selection-container' id={props.selected ? 'list-selected' : ''}>
-                <div className='list-icon-container' onClick={props.onToggle}>
-                    {props.selected ? 
-                        <AddedIcon id='list-icon-added'/> : 
-                        <AddIcon id='list-icon'/>
-                    }
-                </div>
+        {props.selectable &&  //only display add icons if the list item are selectable
+            <div className='list-selection-container' id={props.selected ? 'list-selected' : ''}>
+                    <div className='list-icon-container' onClick={props.onToggle}>
+                        {props.selected ? 
+                            <AddedIcon id='list-icon-added'/> : 
+                            <AddIcon id='list-icon'/>
+                        }
+                    </div>
             </div>
-        
+        }
     </div>
 )
 
 class List extends Component {
     state = {
         selected : [], 
+    }
+    componentDidUpdate = (prevProps, prevState) => {
+        
+        
+        if (prevProps.type !== this.props.type && prevState.selected.length !== 0)
+        {
+            prevProps.updateTracks(prevState.selected.slice())
+            this.setState({selected: []})
+        }
+            
     }
     handleToggle = value => {
         const { selected } = this.state
@@ -57,6 +68,7 @@ class List extends Component {
                 return(<ListItem key={item.id} 
                                  item={item} 
                                  type={this.props.type}
+                                 selectable={this.props.selectable}
                                  selected={selected}
                                  onToggle={() => this.handleToggle(value)}
                                  contentClick={this.props.contentClick}/>)
