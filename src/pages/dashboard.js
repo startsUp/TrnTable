@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import '../App.css'
 import appIcon from '../res/images/logo.webp'
+import SpotifyPlayer from './components/spotifyPlayer';
 
 const Track = props => (
     // url, albumArt.url, albumName, artists
@@ -86,6 +87,7 @@ class Dashboard extends Component {
                         {this.props.user.name}'s Session
                     </div>
                 </div>
+                <SpotifyPlayer apiRef={this.props.apiRef} user={this.props.user} accessToken={this.props.accessToken}/>
                 <div className='dashboard-queue-container'>
                     {tracks}
                 </div>

@@ -102,8 +102,8 @@ class SessionType extends Component {
     }
 
     createRoom = (roomCode) => {
-        this.setState({roomCode: roomCode})
-        
+        //set state to show the generated room code
+        this.setState({roomCode:roomCode})
         //initiate room in firestore
         var dbRef = this.props.dbRef
         dbRef.collection('rooms').doc(roomCode).set({
@@ -115,6 +115,7 @@ class SessionType extends Component {
                     .collection('users')
                     .doc(this.props.user.id)
                     .set({joinedTimestamp: new Date()})
+            
         })
 
     }
@@ -151,17 +152,23 @@ class SessionType extends Component {
 
         // check if the room exists 
 
-        if(this.state.sessionType === 'host')
+        if(this.state.sessionType === 'host'){
+            this.props.setRoomCode(this.state.roomCode)
             this.props.changePage('trackImport')
+        }
+            
         else
         {
        
-            this.props.setRoomCode(roomCode)
+            
             //validate with database
             this.getRoom(roomCode)
             .then((document) => {
-                if(document.exists) 
+                if(document.exists){
+                    this.props.setRoomCode(roomCode)
                     this.props.changePage('dashboard')
+                }
+                    
                 else {
                     
                     this.setState({
@@ -191,9 +198,10 @@ class SessionType extends Component {
             var title = this.state.sessionType==='host' ? 'Here\'s your room code' : 'Enter the session code'
             var info = this.state.sessionType==='host' ? 'Give this code to your friends to join your session.' : 'You can get this code from the host.'
             var buttonText = this.state.sessionType==='host' ? 'Start' : 'Join'
+            var click = this.state.sessionType==='host' ? this.enterRoom : this.validateInput
             card = <RoomCodeCard id={this.state.sessionType} roomCode={this.state.roomCode}  
                     cardTitle={title} cardInfo={info} icon={icon} buttonText={buttonText} 
-                    onEnter={this.inputSubmit} inputID={this.state.input.isValid} onClick={this.validateInput}
+                    onEnter={this.inputSubmit} inputID={this.state.input.isValid} onClick={click}
                     error={this.state.input.error}/>
         }
             

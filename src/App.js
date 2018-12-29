@@ -40,11 +40,12 @@ class App extends Component {
         
 		this.state = {
           loggedIn: token ? true : false,
-          page: token ? 'trackImport':'login',
+          page: token ? 'dashboard':'login',
           roomRef: null,
           user: null,
           token: token,
-          refreshToken: refreshToken
+          refreshToken: refreshToken,
+          queue: []
         }
         
     }
@@ -79,10 +80,11 @@ class App extends Component {
 		return hashParams
     }
     
-    changePage = (page) => {
-        this.setState({page: page})
-        if(page === 'trackImport') 
+    changePage = (nextPage, tracks=null) => {
+        if(this.state.page === 'trackImport' && nextPage === 'dashboard') 
             this.createPlaylist(this.getDate() + ' TrnTable Session')
+        this.setState({page: nextPage})
+        
     }
     getDate = () => {
         var monthNames = [
@@ -106,7 +108,7 @@ class App extends Component {
 
     getUserPlaylists = (user, options, callback) => {
         spotifyApi.getUserPlaylists(user.id, options, callback)
-
+        // spotifyApi.transferMyPlayback()
     }
 
     getPlaylistTracks = (user, playlistID, options, callback) => {
@@ -121,7 +123,7 @@ class App extends Component {
     createPlaylist = (name) => {
         spotifyApi.createPlaylist(this.state.user.id, {name: name})
                 .then((playlist) => {
-                    var playlistObj = {href: playlist.href, uri: playlist.uri, id: playlist.id}
+                    var playlistObj = {href: playlist.href, uri: playlist.uri, id: playlist.id, owner: playlist.owner}
                     this.setState({playlistRef: playlistObj}) //store playlist object in state
 
                     this.props.dbRef
@@ -138,19 +140,16 @@ class App extends Component {
     var page = <Login/>
     const currentPage = this.state.page
     const user = this.state.user
-    console.log('user', user)
+    console.log('room', this.state.roomRef)
     if(currentPage === 'sessionType') 
         page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} 
                             user={user} setRoomCode={this.setRoomCode} />
     else if(currentPage === 'dashboard') 
         page = <Dashboard user={user} 
                 apiRef={spotifyApi} dbRef={this.props.dbRef} 
-                roomCode={this.state.roomRef}/>
+                roomCode={this.state.roomRef} accessToken={this.state.token}/>
     else if(currentPage === 'trackImport') 
-        page = <ImportTrack user={user} apiRef={spotifyApi} roomCode={this.state.roomRef}/>
-    else if(currentPage === 'player')
-        page = <SpotifyPlayer accessToken={this.state.token} user={this.state.user}/>
-
+        page = <ImportTrack roomCode={this.state.roomRef} user={user} apiRef={spotifyApi} roomCode={this.state.roomRef} changePage={this.changePage}/>
     
     
     return (

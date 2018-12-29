@@ -18,9 +18,9 @@
   }
   
   
-  .icon-container, .list-icon-container{
-    height: 2em;
-    width: 2em;
+  .icon-container, .list-icon-container, .popup-close-icon{
+    height: 1.5rem;
+    width: 1.5rem;
     margin: auto 0;
     -webkit-transition: transform 0.3s ease;
     -moz-transition: transform 0.3s ease;
@@ -31,7 +31,7 @@
   
   .heading{
     font-family: 'sofia_problack';
-    font-size: 1.8em; 
+    font-size: 1.35em; 
     color: white;
   }
   #menu-icon, #list-icon, #list-icon-added:hover{
@@ -45,9 +45,77 @@
       fill: #1ED660;
   }
 
-  #menu-icon:hover, #list-icon:hover, #list-icon-added{
+  #menu-icon:hover, #list-icon:hover, #list-icon-added, #ca-popup-close-icon:hover{
     fill: #1ED660;
 }
+
+.header-container{
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin:1em;
+    font-family: 'sofia_problack';
+    font-size: 2em;
+    color: #1ED660;
+}
+
+
+
+  /*---------------------------------------------------------- 
+  ------------------------------------------------------------  
+                          POPUP 
+  ------------------------------------------------------------  
+  ------------------------------------------------------------  
+  */
+
+.ca-popup-container{
+    position: absolute;
+    height: 100vh;
+    width: 100vw;
+    background: rgba(0, 0, 0, 0.4);
+}
+.ca-popup{
+    font-family: 'sofia_prolight';
+    display: grid;
+    padding: 1em;
+    position: absolute;
+    width: 20em;
+    height: 25em;
+    background: white;
+    top: 50vh;
+    left: 50vw;
+    transform: translate(-50%, -50%);
+    border-radius: 1em;
+    text-align: left;
+}
+#ca-popup-title{
+    display: grid;
+    line-height: 2.5rem;
+}
+#ca-popup-close-icon{
+    position: absolute;
+    margin: 0.5rem;
+    right: 0;
+    cursor: pointer;
+}
+#ca-popup-action{
+    display: grid;
+    
+}
+#ca-popup-button{
+    color: black;
+    text-align: center;
+    margin: auto 0;
+    padding: 1em 1em;
+}
+.ca-popup-message{
+    font-size: 1.2em;
+    padding: 0 1em;
+}
+.ca-popup-button{
+
+}
+
   /*---------------------------------------------------------- 
   ------------------------------------------------------------  
                           LOGIN PAGE 
@@ -60,10 +128,10 @@
       width: 100vw;
       background-color: rgba(1, 1, 1, 0.7);
       display: grid;
-      grid-template-rows: 1.2fr 1fr;
+      grid-template-rows: 1fr 1fr;
   }
   .login-page-title{
-      padding-top: 0.5em;
+      padding-top: 0.5rem;
       margin: 0;
       font-family: 'sofia_problack';
       font-size: 8em;
@@ -81,9 +149,12 @@
       font-size: 3.5em;
       padding-bottom: 1em;
       color: white;
+
   }
   .button-container
   {
+   
+     text-decoration: none;
       background-color: transparent;
       border: solid rgba(30, 214, 96, 1) 2px;
       cursor: pointer !important;
@@ -106,9 +177,6 @@
       transition-duration:0.4s, 0.4s;
       transition-property:border-color, background-color;
       transition-timing-function:ease, ease;
-      
-      padding: 1em 3.5em;
-      border-radius: 4em;
   }
   
   #spotify-button{
@@ -131,7 +199,7 @@
       height: 5em;
       width: 5em;
   }
-  .header-title{
+  .header-title, .popup-title{
     font-family: 'sofia_problack';
     font-size: 3em;
     padding: 0.2em;
@@ -159,7 +227,7 @@
 
 
   .divider{
-      height: 0.1em;
+      max-height: 0.1rem;
       background-color: black;
       width: 80%;
       margin: 0 auto;
@@ -171,12 +239,12 @@
 
   }
 
-  .session-container{
+  .session-container {
       display: grid;
       height: 100vh;
       width: 100vw;
       background: rgba(0,0,0,0.7);
-      grid-template-rows: 0.5fr 0.7fr 12fr;
+      grid-template-rows: 12vh 6vh 82vh;
   }
   .session-title{
       display: grid;
@@ -203,8 +271,8 @@
 
   }
   .session-types-card{
-      width: 23em;
-      height: 30em;
+      width: 21rem;
+      height: 28rem;
       padding: 1em;
       border-radius: 1em;
       background-color: white;
@@ -228,7 +296,6 @@
     transition-timing-function:ease, ease;
     cursor: pointer;
     color: white;
-    border: 1px solid black;
 }
 /*          ROOM          */
 
@@ -236,7 +303,7 @@
     display: grid;
     grid-template-columns: 1fr;
     justify-content: center;
-    margin: 1em auto;
+    margin: 0 auto;
 }
 .room-card-title{
     font-family: 'sofia_problack';
@@ -277,7 +344,7 @@
 
 
 #continue-button{
-    height: 4em;
+    height: 2em;
 }
 /* .session-types-card:hover ~ .card-title {
     color: white;
@@ -302,13 +369,12 @@
 
   .list-container{
       overflow: auto;
-      padding: 0.5em 2em;
-      
+     
   }
 
   .list-item{
       display: grid;
-      grid-template-columns: 10% 80% 10%;
+      grid-template-columns: 12% 80% 8%;
       padding: 0.5em;
       color: white;
       font-family: 'sofia_proregular';
@@ -320,10 +386,12 @@
       cursor: pointer;
   }
   .list-content{
-    font-size: 1.7em;
+    font-size: 1.2em;
     padding-bottom: 0.1em;
   }
-
+  .list-subcontent{
+    font-size: 0.8em;
+  }
   .list-selection-container{
       margin: auto;
   }
@@ -344,8 +412,8 @@
 .import-container{
     display: grid;
     margin: 0 auto;
-    width: 80em;
-    height: auto;
+    width: 80%;
+    max-height: 100%;
     background: rgba(1, 1, 1, 0.8);
     border-radius: 1em;
     grid-template-rows: 4em 1em 36em;
@@ -356,7 +424,7 @@
 
 .import-main-container{
     display: grid;
-    
+    max-height: 65vh;
 }
 
 #import-w-sidebar{
@@ -369,15 +437,15 @@
 
 #import-header-container{
     display: grid;
-    grid-template-columns: 3em auto 19em;
+    grid-template-columns: 3em 18em auto 9em;
     justify-items: right;
     margin: auto 0;
+    padding-right: 1em;
 }
 
 #spotify-search-input{
   font-family: 'sofia_proregular';
-  font-size: 1.2em;
-  border-radius: 1em;
+  border-radius: 2em;
   outline: none;
   border:none;
   width: 15em;
@@ -389,6 +457,7 @@
     
     border-radius: 1em;
     background: rgba(255,255,255,0.1);
+    font-family: 'sofia_proregular';
     
 }
 
@@ -396,24 +465,22 @@
     cursor: pointer;
     padding: 0.5em;
     margin: 1em;
-    font-size: 1.5em;
     border-radius: 2em;
     color: white;
 }
 
-.import-library-button:hover, .show-queue-button:hover, #active{
+.import-library-button:hover, .show-queue-button:hover, #active, .popup-button:hover{
     background-color: #1ED660;
     color: black;
 }
 
-.show-queue-button{
+.show-queue-button, .popup-button{
     font-family: 'sofia_proregular';
-    font-size: 1.2em;
+    font-size: 1em;
     border-radius: 2em;
     border: solid #1ED660 1px;
     color: white;
-    padding: 0.5em 1em;
-    
+    padding: 0.5em 1em;    
     cursor: pointer;
 }
 
