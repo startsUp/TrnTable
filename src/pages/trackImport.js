@@ -7,12 +7,11 @@ import placeholderIcon from '../res/images/spotifyIcon.png'
 import {ReactComponent as LoadingIcon} from '../res/images/loading.svg'
 import ConfirmActionPopup from './components/confirmPopup'
 import Header from './components/header'
+import SpotifySearch from './components/spotifySearch'
+import SpotifySearchResults from './components/spotifySearchResults'
 //A SearchResultSection can be used to show track, album and artist results
-const SearchResultSection = props => (
-    <div>
-        
-    </div>
-)
+
+
 const Divider = props => {
 	return(<div className='divider' style={props.customStyle}/>)
 }
@@ -36,16 +35,20 @@ const ImportContainer = props => (
     <div className='import-container'>
         <div id='import-header-container'>
             <div className='icon-container'><MenuIcon id={props.showSidebar ? 'icon-active' : 'menu-icon'} onClick={props.toggleSidebar}/></div>
-            <input id='spotify-search-input' placeholder='Search... '/>
+            <SpotifySearch apiRef={props.apiRef} onSearchResults={props.displayResults}/>
 			<div className='show-queue-button' id={props.active ? 'active': ''} onClick={()=>props.showQueue(true)}> Queue </div> 
 			<div className='show-queue-button' onClick={() => props.startSession('startSession')}> Start Session </div>
         </div>
         <Divider customStyle={{backgroundColor:'#1ED660', width:'100%', height:'0.05em'}}/>
         <div className='import-main-container' id={props.showSidebar ? 'import-w-sidebar': ''}>
             {props.showSidebar && <LibrarySidebar showLibrary={props.showLibrary} view={props.view} />} 
-            <List emptyMessage={props.emptyMessage} items={props.list} contentClick={props.contentClick}
-                  type={props.view} selectable={(props.view !== 'playlist' && props.view !== 'albums' && props.view !== 'queue' )}
-                  updateTracks={props.updateTracks}/>
+            {props.view === 'search' ?
+                <SpotifySearchResults data={props.searchRes}/>
+                :
+                <List emptyMessage={props.emptyMessage} items={props.list} contentClick={props.contentClick}
+                    type={props.view} selectable={(props.view !== 'playlist' && props.view !== 'albums' && props.view !== 'queue' )}
+                    updateTracks={props.updateTracks}/>
+            }
         </div>
         
         
@@ -74,7 +77,8 @@ class ImportTrack extends Component {
             selectedPlaylist : null,
             view: 'songs',
 			showSidebar: true,
-			popup: {show: false},
+            popup: {show: false},
+            search: {tracks: [], artists: [], playlists:[], albums:[]}
         }
 	}
 	
@@ -89,9 +93,11 @@ class ImportTrack extends Component {
     parseData = (dataType, data, albumRef=null) => {
         if(dataType === 'songs' || dataType === 'albumSongs')
         {
+        
             var tracks = []
             data.items.forEach(item => { 
-                var track = item.track
+                var track = item.track ? item.track : item
+                
                 var icon = null
                 var albumArt = null
                 var name = null
@@ -138,7 +144,7 @@ class ImportTrack extends Component {
         {
             var albums = []
             data.items.forEach(item => { 
-                var album = item.album
+                var album = item.album ? item.album : item
                 var artists = album.artists.map(elem => {return elem.name}).join(", ")
                 albums.push({name: album.name,
                              artists: artists,
@@ -152,8 +158,22 @@ class ImportTrack extends Component {
             })
     
             return albums
-        }
-
+        } 
+        else if (dataType === 'artists')
+        {
+            var artists = []
+            data.items.forEach(item => {
+                var icon = item.images[2] ?  item.images[2].url : placeholderIcon
+                artists.push({
+                                name: item.name,
+                                content: item.name,
+                                iconURL: icon,
+                                id: item.id,
+                                uri: item.uri
+                            })
+            })
+            return artists
+        }      
     }
     updateTracks = (tracks) => {
         this.setState({tracksToAdd: tracks})
@@ -202,6 +222,22 @@ class ImportTrack extends Component {
               }})
         }
             
+    }
+
+    displayResults = (data) => {
+
+        const tracks = this.parseData('songs', data.tracks)
+        const playlists = this.parseData('playlist', data.playlists)
+        const albums = this.parseData('albums', data.albums)
+        const artists = this.parseData('artists', data.artists)
+
+        this.setState({search: {tracks: tracks, 
+                                playlists: playlists, 
+                                albums: albums, 
+                                artists: artists}, 
+                      view: 'search'})
+
+
     }
 
     startSession = () => {
@@ -320,7 +356,8 @@ class ImportTrack extends Component {
 				userPlaylists,
 				 userAlbums, 
 				currentAlbum, 
-				currentPlaylist} = this.state
+                currentPlaylist,
+                search} = this.state
 
         var emptyMessage = view === 'queue' ? 
                             'Added songs will show up here' : 'No saved ' + this.state.view
@@ -340,7 +377,6 @@ class ImportTrack extends Component {
         else if (view === 'playlistTracks')
             list = currentPlaylist.tracks
 
-		console.log(this.props.roomCode)
         return (
             <div className='session-container' id='import'>
                 <div className='session-header'>
@@ -357,10 +393,13 @@ class ImportTrack extends Component {
                                 list={list}
                                 view={view}
                                 showSidebar={showSidebar}
+                                apiRef={this.props.apiRef}
                                 toggleSidebar={this.toggleSidebar}
                                 contentClick={this.showTracksFor}
                                 updateTracks={this.updateTracks}
-								startSession={this.confirmAction}/>
+                                displayResults={this.displayResults}
+								startSession={this.confirmAction}
+                                searchRes={search}/>
 				{popup.show && <ConfirmActionPopup popupInfo={popup}/>}
 				{this.props.roomCode && <Header content={'Room Code: ' + this.props.roomCode}/>}
             </div> 

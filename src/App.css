@@ -59,6 +59,24 @@
     color: #1ED660;
 }
 
+.search-container{
+    display: grid;
+    grid-template-columns: 8fr 2fr;
+    font-family: 'sofia_proregular';
+    background: white;
+    border-radius: 1em;
+    max-width: 20em;
+}
+
+.search-button{
+    margin: auto 0;
+    padding: 0 1em;
+    border-left: solid #1ED660 1px;
+}
+.search-button:hover{
+    color: #1ED660;
+    cursor: pointer;
+}
 
 
   /*---------------------------------------------------------- 
@@ -359,7 +377,35 @@
   -sf
 
   */
+   /*---------------------------------------------------------- 
+  ------------------------------------------------------------  
+                          Spotify Search
+  ------------------------------------------------------------  
+  ------------------------------------------------------------  
+  */
 
+#spotify-results-container{
+    padding: 0 1em;
+}
+.search-result-title{
+    font-family: 'sofia_problack';
+    font-size: 2em;
+    color: #1ED660;
+    padding: 0.5em;
+}
+.result-container{
+    border-radius: 1em;
+    margin-bottom: 1em;
+    -webkit-box-shadow: 0px 0px 33px 3px rgba(0,0,0,0.75);
+    -moz-box-shadow: 0px 0px 33px 3px rgba(0,0,0,0.75);
+    box-shadow: 0px 0px 33px 3px rgba(0,0,0,0.75);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#list-showmore-button{
+    width: 20%;
+    margin: 1em auto;
+}
   /*---------------------------------------------------------- 
   ------------------------------------------------------------  
                           LIST 
@@ -367,10 +413,11 @@
   ------------------------------------------------------------  
   */
 
-  .list-container{
+  .list-container, .search-results-container{
       overflow: auto;
      
   }
+
 
   .list-item{
       display: grid;
@@ -437,18 +484,17 @@
 
 #import-header-container{
     display: grid;
-    grid-template-columns: 3em 18em auto 9em;
+    grid-template-columns: 2em 21em auto 9em;
     justify-items: right;
     margin: auto 0;
     padding-right: 1em;
 }
 
 #spotify-search-input{
-  font-family: 'sofia_proregular';
+
   border-radius: 2em;
   outline: none;
   border:none;
-  width: 15em;
   padding: 0.5em 1em;
  
 }  
@@ -469,12 +515,12 @@
     color: white;
 }
 
-.import-library-button:hover, .show-queue-button:hover, #active, .popup-button:hover{
+.import-library-button:hover, .show-queue-button:hover, #active, .popup-button:hover, .list-showmore:hover{
     background-color: #1ED660;
     color: black;
 }
 
-.show-queue-button, .popup-button{
+.show-queue-button, .popup-button, .list-showmore{
     font-family: 'sofia_proregular';
     font-size: 1em;
     border-radius: 2em;
@@ -483,6 +529,7 @@
     padding: 0.5em 1em;    
     cursor: pointer;
 }
+
 
   /*---------------------------------------------------------- 
   ------------------------------------------------------------  

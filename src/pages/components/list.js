@@ -32,7 +32,8 @@ const ListItem = props => (
 
 class List extends Component {
     state = {
-        selected : [], 
+        selected : [],
+        itemsToShow: this.props.itemsToShow ? this.props.itemsToShow : -1, 
     }
     componentDidUpdate = (prevProps, prevState) => {
         
@@ -60,10 +61,18 @@ class List extends Component {
         })
         this.props.updateTracks(newSelected)
     }
+
+    handleShowMore = () => {
+        this.setState({itemsToShow: this.state.itemsToShow * 2})
+    }
     render() {
         var list = null
+        const { itemsToShow } = this.state
+
         if(this.props.items.length > 0){
             list = this.props.items.map((item, value) => {
+                if (itemsToShow !== -1 && value >= itemsToShow)
+                    return 
                 var selected = this.state.selected.indexOf(value) !== -1 
                 return(<ListItem key={item.id} 
                                  item={item} 
@@ -82,6 +91,8 @@ class List extends Component {
         return (
             <div className='list-container'>
                 {list === null ? emptyMessage : list}
+                {itemsToShow !== -1 && <div className='list-showmore' id='list-showmore-button'
+                                onClick={this.handleShowMore}>Show More</div>}
             </div>
         )
     }

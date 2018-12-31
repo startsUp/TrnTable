@@ -40,7 +40,7 @@ class App extends Component {
         
 		this.state = {
           loggedIn: token ? true : false,
-          page: token ? 'dashboard':'login',
+          page: token ? 'trackImport':'login',
           roomRef: null,
           user: null,
           token: token,
@@ -54,6 +54,7 @@ class App extends Component {
             spotifyApi.getMe().then((userData)  => {
                 this.setState({user: userData})
             })
+        
             .catch((err) => console.log(err)) //get access token here
             
             
@@ -109,6 +110,8 @@ class App extends Component {
     getUserPlaylists = (user, options, callback) => {
         spotifyApi.getUserPlaylists(user.id, options, callback)
         // spotifyApi.transferMyPlayback()
+    
+
     }
 
     getPlaylistTracks = (user, playlistID, options, callback) => {
