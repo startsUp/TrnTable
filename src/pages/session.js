@@ -14,14 +14,14 @@ const Divider = props => {
 const RoomCodeCard = props => (
     <div className='room-card'>
         <div id='room-code-card'>
-            <div><img src={props.icon}/></div>
+            <div className='card-icon-container'><img className='room-icon' src={props.icon}/></div>
             <div className='room-card-title'>
                 {props.cardTitle}
             </div>
           
             {props.id==='host' ?
                 <input id='room-code-input' value={props.roomCode} readOnly/>:
-                <input style={props.inputID ? {}:{'border': '2px solid red'}} id='room-code-input' onKeyPress={props.onEnter} maxLength='4'/>
+                <input style={props.inputID ? {}:{'border': '2px solid red'}} placeholder='...' id='room-code-input' onKeyPress={props.onEnter} maxLength='4'/>
             }
             
             <div id={props.inputID ? '' : 'room-text-error'} className='room-text-tip'> {props.inputID ? props.cardInfo : props.error} </div>
@@ -40,21 +40,19 @@ const SessionCards = props => (
                 <div className='card-title'>
                     Host a session
                 </div>
-                <Divider/>
                 <div className='card-info'>
                     Your crew can join a room and request some bumpin' music!
                 </div>
-                <div><img src={djIcon}/></div>
+                <div><img className='card-icon' src={djIcon}/></div>
             </div>
             <div className='session-types-card' onClick={() => props.pickSession('join')}>
                 <div className='card-title'>
                     Join a session
                 </div>
-                <Divider/>
                 <div className='card-info'>
                     Join your crew and request some bumpin' music to liven up the party!   
                 </div>
-                <div><img src={speakerIcon}/></div>
+                <div><img className='card-icon' src={speakerIcon}/></div>
 
             </div>
         </div> 
@@ -207,7 +205,7 @@ class SessionType extends Component {
             
         else{
             card = <SessionCards pickSession={this.pickSession}/>
-            headerInfo = <div id='session-info'> I would like to ...</div>
+            // headerInfo = <div id='session-info'> I would like to ...</div>
         }
             
 

@@ -5,6 +5,8 @@ import List from './components/list'
 import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
 import placeholderIcon from '../res/images/spotifyIcon.png'
 import {ReactComponent as LoadingIcon} from '../res/images/loading.svg'
+import {ReactComponent as QueueIcon} from '../res/images/song-queue.svg'
+import {ReactComponent as StartIcon} from '../res/images/play-button.svg'
 import ConfirmActionPopup from './components/confirmPopup'
 import Header from './components/header'
 import SpotifySearch from './components/spotifySearch'
@@ -13,19 +15,19 @@ import SpotifySearchResults from './components/spotifySearchResults'
 
 
 const Divider = props => {
-	return(<div className='divider' style={props.customStyle}/>)
+	return(<div className='divider' id={props.id} style={props.customStyle}/>)
 }
 
 const UserLibraryButton = props => (
     <div className='import-library-button' id={props.selected ? 'active':''} onClick={()=> props.showLibrary(props.id)}>
         <div>{props.icon}</div>
-        <div>{props.desc}</div>
+        <div className='import-library-button-desc'>{props.desc}</div>
     </div>
 )
 const LibrarySidebar = props => (
     <div className='import-library-container'>
         <div className='heading' id='import-head'> Your Library </div>
-        <Divider customStyle={{backgroundColor:'white', height: '0.05em'}}/>
+        <Divider id='lib-side-divider' customStyle={{backgroundColor:'white', height: '0.05em'}}/>
         <UserLibraryButton id='songs' desc='Songs' selected={'songs'===props.view} showLibrary={() => props.showLibrary('songs')}/>
         <UserLibraryButton id='playlst' desc='Playlist' selected={'playlist'===props.view} showLibrary={() => props.showLibrary('playlist')}/>
         <UserLibraryButton id='albums' desc='Albums' selected={'albums'===props.view}  showLibrary={() => props.showLibrary('albums')}/>
@@ -36,7 +38,16 @@ const ImportContainer = props => (
         <div id='import-header-container'>
             <div className='icon-container'><MenuIcon id={props.showSidebar ? 'icon-active' : 'menu-icon'} onClick={props.toggleSidebar}/></div>
             <SpotifySearch apiRef={props.apiRef} onSearchResults={props.displayResults}/>
-			<div className='show-queue-button' id={props.active ? 'active': ''} onClick={()=>props.showQueue(true)}> Queue </div> 
+            <div className='mobile-import-container'>
+                <div>
+                    <QueueIcon id={props.view === 'queue' ? 'active-icon': ''} onClick={()=>props.showQueue(true)} className='mobile-import-icons'/>
+                </div>
+                <div>
+                    <StartIcon className='mobile-import-icons' onClick={() => props.startSession('startSession')}/>
+                </div>
+            </div> 
+
+			<div className='show-queue-button' id={props.view === 'queue' ? 'active': ''} onClick={()=>props.showQueue(true)}> Queue </div> 
 			<div className='show-queue-button' onClick={() => props.startSession('startSession')}> Start Session </div>
         </div>
         <Divider customStyle={{backgroundColor:'#1ED660', width:'100%', height:'0.05em'}}/>
@@ -347,7 +358,7 @@ class ImportTrack extends Component {
         this.setState({showSidebar: !this.state.showSidebar})
     }
     render() {
-        const headerInfo = <div id='session-info'>Before we start, let's add some music!</div>
+        const headerInfo = <div id='import-info'>Before we start, let's add some music!</div>
 		const {popup, 
 				view, 
 				showSidebar, 
@@ -381,12 +392,12 @@ class ImportTrack extends Component {
             <div className='session-container' id='import'>
                 <div className='session-header'>
                     <div className='session-title'>
-                        <div><img className='header-logo' src={appIcon}/></div>
-                        <div className='header-title'>TrnTable</div>
+                        <div><img className='import-header-logo' src={appIcon}/></div>
+                        <div className='header-title' id='import-header-title'>TrnTable</div>
                     </div>
                 </div>
                 {headerInfo}
-                <ImportContainer active={view === 'queue'} 
+                <ImportContainer
                                 showQueue={this.updateQueue}
                                 showLibrary={this.showLibrary} 
                                 emptyMessage={emptyMessage}
