@@ -40,7 +40,7 @@ class App extends Component {
         
 		this.state = {
           loggedIn: token ? true : false,
-          page: token ? 'trackImport':'trackImport',
+          page: token ? 'sessionType':'login', //original : sType, login 
           roomRef: null,
           user: null,
           token: token,
@@ -54,11 +54,18 @@ class App extends Component {
             spotifyApi.getMe().then((userData)  => {
                 this.setState({user: userData})
             })
-        
+            
             .catch((err) => console.log(err)) //get access token here
             
             
         }
+        
+        this.props.firebase.auth().onAuthStateChanged((user) => {
+            if(user)
+                console.log(user)
+            
+			    this.setState({user: user, authChecked: true})
+		})
         
     }
   

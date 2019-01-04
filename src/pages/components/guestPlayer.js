@@ -1,8 +1,6 @@
 import React, { Component } from 'react'
 import '../../App.css'
-import {ReactComponent as PlayIcon} from '../../res/images/player-play.svg'
-import {ReactComponent as PauseIcon} from '../../res/images/player-pause.svg'
-import {ReactComponent as NextIcon} from '../../res/images/player-next.svg'
+import {ReactComponent as LikeIcon} from '../../res/images/player-like.svg'
 class SpotifyPlayer extends Component {
 constructor(props) {
     super(props)
@@ -12,11 +10,10 @@ constructor(props) {
         deviceId: "",
         user: this.props.user,
         error: "",
-        track: {id: "",
-                trackName: "",
-                artistName: "",
-                albumName: "",
-                artURL:"",},
+        trackName: "",
+        artistName: "",
+        albumName: "",
+        artURL:"",
         playing: false,
         position: 0,
         duration: 1,
@@ -25,55 +22,53 @@ constructor(props) {
     this.playerCheckInterval = null
 }
 
-// when we click the "go" button
+// listen to changes to the host player
 componentDidMount = () => {
-    this.playerCheckInterval = setInterval(() => this.checkForPlayer(), 1000)
+    var unsubscribe = this.props.dbRef
+                        .collection('rooms')
+                        .doc(this.props.roomCode)
+                        .collection('nowPlaying')
+                        .onSnapshot((snapshot) => {
+                            
+                            var track = snapshot.docs[0]
+                            this.setState({track: track})
+                        })
+    this.setState({unsubscribe: unsubscribe})
 }
     
-updateTrackForGuests = () => {
-    this.props.dbRef
-                .collection('rooms')
-                .doc(this.props.roomCode)
-                .collection('nowPlaying')
-                .doc('track')
-                .set({
-                    track: this.state.track
-                })
-}
 
 // when we receive a new update from the player
-onStateChanged(playerState) {
+onStateChanged(state) {
     // only update if we got a real state
-    if (playerState !== null) {
+    if (state !== null) {
     const {
         current_track: currentTrack,
         position,
         duration,
-    } = playerState.track_window
+    } = state.track_window
+    console.log(state)
+
+    //   if(!state.paused){
+    //       console.log(state.paused)
+    //     this.player.togglePlay()
+    //   }
     
-    if(currentTrack.id === this.state.track.id)
-        return
-
-    this.updateTrackForGuests()
-
     const artURL = currentTrack.album.images[0].url
     const trackName = currentTrack.name
     const albumName = currentTrack.album.name
     const artistName = currentTrack.artists
                                 .map(artist => artist.name)
                                 .join(", ")
-    const playing = !playerState.paused
-    const id = currentTrack.id
-    this.setState({track:{
-            id: id,
-            position: position,
-            duration: duration,
-            trackName: trackName,
-            albumName: albumName,
-            artistName: artistName,
-            playing: playing,
-            artURL: artURL
-         }})
+    const playing = !state.paused
+    this.setState({
+        position,
+        duration,
+        trackName,
+        albumName,
+        artistName,
+        playing,
+        artURL
+    })
     } else {
     // state was null, user might have swapped to another device
     this.setState({ error: "Looks like you might have swapped to another device?" })
@@ -162,10 +157,13 @@ startPlaylistPlayback = () => {
 render() {
     const {
     token,
+    trackName,
+    artistName,
+    albumName,
+    artURL,
     error,
     playing
     } = this.state
-    const { trackName, artURL, albumName, artistName } = this.state.track
     console.log(this.state)
     return (
     <div className='spotify-player-container'>

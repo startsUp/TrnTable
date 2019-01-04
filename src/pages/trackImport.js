@@ -5,8 +5,8 @@ import List from './components/list'
 import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
 import placeholderIcon from '../res/images/spotifyIcon.png'
 import {ReactComponent as LoadingIcon} from '../res/images/loading.svg'
-import {ReactComponent as QueueIcon} from '../res/images/song-queue.svg'
-import {ReactComponent as StartIcon} from '../res/images/play-button.svg'
+import {ReactComponent as QueueIcon} from '../res/images/twotone-playlist_add-24px.svg'
+import {ReactComponent as StartIcon} from '../res/images/twotone-video_library-24px.svg'
 import ConfirmActionPopup from './components/confirmPopup'
 import Header from './components/header'
 import SpotifySearch from './components/spotifySearch'
@@ -39,10 +39,10 @@ const ImportContainer = props => (
             <div className='icon-container'><MenuIcon id={props.showSidebar ? 'icon-active' : 'menu-icon'} onClick={props.toggleSidebar}/></div>
             <SpotifySearch apiRef={props.apiRef} onSearchResults={props.displayResults}/>
             <div className='mobile-import-container'>
-                <div>
+                <div className='mobile-icon-container'>
                     <QueueIcon id={props.view === 'queue' ? 'active-icon': ''} onClick={()=>props.showQueue(true)} className='mobile-import-icons'/>
                 </div>
-                <div>
+                <div className='mobile-icon-container'>
                     <StartIcon className='mobile-import-icons' onClick={() => props.startSession('startSession')}/>
                 </div>
             </div> 

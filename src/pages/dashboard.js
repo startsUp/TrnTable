@@ -44,26 +44,26 @@ class Dashboard extends Component {
     componentDidMount = () => {
 
        // var getFirstFetch = this.getTracks()
-        var unsubscribe = this.props.dbRef.collection('tracksInRoom').doc(this.props.roomCode).collection('tracks').orderBy('addedTimestamp').startAt(this.state.fetchTimestamp)
-                .onSnapshot((snapshot) => {
-                    console.log(snapshot.docs)
+        // var unsubscribe = this.props.dbRef.collection('tracksInRoom').doc(this.props.roomCode).collection('tracks').orderBy('addedTimestamp').startAt(this.state.fetchTimestamp)
+        //         .onSnapshot((snapshot) => {
+        //             console.log(snapshot.docs)
 
-                        snapshot.docChanges().forEach((change) => {
-                            if (change.type === "added") {
-                                var doc = change.doc
-                                let source = doc.metadata.hasPendingWrites ? 'Local' : 'Server'
-                                if (source === 'Server') {
-                                    this.setState({ //update local queue
-                                        tracks: [] 
-                                    })
-                                } else {
-                                // Do nothing, it's a local update so ignore it
-                                }
+        //                 snapshot.docChanges().forEach((change) => {
+        //                     if (change.type === "added") {
+        //                         var doc = change.doc
+        //                         let source = doc.metadata.hasPendingWrites ? 'Local' : 'Server'
+        //                         if (source === 'Server') {
+        //                             this.setState({ //update local queue
+        //                                 tracks: [] 
+        //                             })
+        //                         } else {
+        //                         // Do nothing, it's a local update so ignore it
+        //                         }
                                 
-                            }   
-                        })
-                    })
-        this.setState({unsubscribe: unsubscribe})
+        //                     }   
+        //                 })
+        //             })
+        // this.setState({unsubscribe: unsubscribe})
     }
 
     getTracks = () => {
@@ -84,7 +84,7 @@ class Dashboard extends Component {
                         {appIcon}
                     </div>
                     <div>
-                        {this.props.user.name}'s Session
+                        Placeholder's Session
                     </div>
                 </div>
                 <SpotifyPlayer apiRef={this.props.apiRef} user={this.props.user} accessToken={this.props.accessToken}/>
