@@ -18,6 +18,38 @@
     overflow: hidden;
   }
 
+  .loading-logo {
+      height: 7rem;
+    animation: App-logo-spin infinite 2s ease-in-out;
+ 
+  }
+  #logo-container{
+    position: absolute;
+    top: 25vh;
+    left: 50vw;
+    transform: translate(-50%, -50%);
+    font-family: 'sofia_problack';
+    color: #1ED660;
+    font-size: 2em;
+  }
+  .loading-container{
+      height: 100vh;
+      width: 100vw;
+      background: rgba(0, 0, 0, 0.4);
+
+  }
+
+  
+@keyframes App-logo-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  
   
   .icon-container, .list-icon-container, .popup-close-icon{
     height: 1.5rem;

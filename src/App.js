@@ -4,9 +4,12 @@ import Dashboard from './pages/dashboard'
 import SessionType from './pages/session'
 import ImportTrack from './pages/trackImport'
 import SpotifyPlayer from './pages/components/spotifyPlayer'
+import { getSpotifyToken } from './helpers'
+import logo from './res/images/logo.webp'
 import './App.css'
 import SpotifyWebApi from 'spotify-web-api-js'
 const spotifyApi = new SpotifyWebApi()
+
 
 // const spotifyApi = new SpotifyWebApi()
 
@@ -27,10 +30,22 @@ const spotifyApi = new SpotifyWebApi()
            
 // )
 
+const LoadingScreen = () => (
+		<div className='loading-container'>
+            <div id='logo-container'>
+                <p id='logo-title'>TrnTable</p>
+			    <img src={logo} className="loading-logo" alt="Loading" />
+            </div>
+
+		</div>
+)
+
+
 class App extends Component {
     constructor(props){
 		super(props)
 		const params = this.getHashParams()
+        const firebaseToken = params.token
         const token = params.access_token
         const refreshToken = params.refresh_token
         
@@ -38,35 +53,53 @@ class App extends Component {
 		  spotifyApi.setAccessToken(token)
         }
         
+        
 		this.state = {
           loggedIn: token ? true : false,
-          page: token ? 'sessionType':'login', //original : sType, login 
+          page: token ? 'sessionType':'loading', //original : sType, login 
           roomRef: null,
-          user: null,
+          user: this.props.user,
           token: token,
+          firebaseToken: firebaseToken,
           refreshToken: refreshToken,
           queue: []
         }
         
     }
     componentDidMount = () => {
-        if(this.state.token){
-            spotifyApi.getMe().then((userData)  => {
-                this.setState({user: userData})
-            })
-            
-            .catch((err) => console.log(err)) //get access token here
-            
-            
+        const {firebaseToken} = this.state
+        if(firebaseToken){
+            this.props.firebase
+            .auth()
+            .signInWithCustomToken(firebaseToken)
+            .then((res)  => console.log(res))
+            .catch((err) => console.log(err))
         }
-        
-        this.props.firebase.auth().onAuthStateChanged((user) => {
-            if(user)
-                console.log(user)
             
-			    this.setState({user: user, authChecked: true})
-		})
         
+        this.props.firebase.auth().onAuthStateChanged((user)=>{
+            if(user){
+                console.log(user)
+                this.setState({user: user})
+                //get access token and refresh token
+                if(this.state.token)
+                    this.setState({page: 'sessionType'})
+                else{
+                    console.log('getting token')
+                    getSpotifyToken(user.uid)
+                        .then((res)=>{
+        
+                            this.setState({page: 'sessionType', token: res.access_token})
+                        })
+                        .catch((err) => {
+                            console.log(err)
+                        })
+                }
+            }
+            else{
+                this.setState({page: 'login'})
+            }
+        })
     }
   
     refreshAccessToken = () => {
@@ -147,10 +180,10 @@ class App extends Component {
     }
 
   render() {
-    var page = <Login/>
+
+    var page = <LoadingScreen/>
     const currentPage = this.state.page
     const user = this.state.user
-    console.log('room', this.state.roomRef)
     if(currentPage === 'sessionType') 
         page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} 
                             user={user} setRoomCode={this.setRoomCode} />
@@ -160,7 +193,8 @@ class App extends Component {
                 roomCode={this.state.roomRef} accessToken={this.state.token}/>
     else if(currentPage === 'trackImport') 
         page = <ImportTrack roomCode={this.state.roomRef} user={user} apiRef={spotifyApi} roomCode={this.state.roomRef} changePage={this.changePage}/>
-    
+    else if(currentPage === 'login')
+        page =  <Login/>
     
     return (
       <div className='App'>
