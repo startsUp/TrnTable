@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
 import '../App.css'
-import djIcon from '../res/images/dj.webp'
-import djIconW from '../res/images/djW.webp'
-import speakerIconW from '../res/images/speakersW.webp'
-import appIcon from '../res/images/logo.webp'
-import speakerIcon from '../res/images/speakers.webp'
+import djIcon from '../res/images/dj.png'
+import djIconW from '../res/images/djW.png'
+import speakerIconW from '../res/images/speakersW.png'
+import appIcon from '../res/images/logo.png'
+import speakerIcon from '../res/images/speakers.png'
 
 
 const Divider = props => {

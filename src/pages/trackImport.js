@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import '../App.css'
-import appIcon from '../res/images/logo.webp'
+import appIcon from '../res/images/logo.png'
 import List from './components/list'
 import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
 import placeholderIcon from '../res/images/spotifyIcon.png'

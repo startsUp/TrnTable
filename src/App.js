@@ -5,7 +5,7 @@ import SessionType from './pages/session'
 import ImportTrack from './pages/trackImport'
 import SpotifyPlayer from './pages/components/spotifyPlayer'
 import { getSpotifyToken } from './helpers'
-import logo from './res/images/logo.webp'
+import logo from './res/images/logo.png'
 import './App.css'
 import SpotifyWebApi from 'spotify-web-api-js'
 const spotifyApi = new SpotifyWebApi()
@@ -58,7 +58,7 @@ class App extends Component {
           loggedIn: token ? true : false,
           page: token ? 'sessionType':'loading', //original : sType, login 
           roomRef: null,
-          user: this.props.user,
+          user: null, 
           token: token,
           firebaseToken: firebaseToken,
           refreshToken: refreshToken,
@@ -70,42 +70,40 @@ class App extends Component {
         const {firebaseToken} = this.state
         if(firebaseToken){
             this.props.firebase
-            .auth()
-            .signInWithCustomToken(firebaseToken)
-            .then((res)  => console.log(res))
-            .catch((err) => console.log(err))
+                .auth()
+                .signInWithCustomToken(firebaseToken)
+                .catch(err=> console.log(err))
         }
             
         
         this.props.firebase.auth().onAuthStateChanged((user)=>{
             if(user){
-                console.log(user)
                 this.setState({user: user})
                 //get access token and refresh token
                 if(this.state.token)
                     this.setState({page: 'sessionType'})
                 else{
-                    console.log('getting token')
-                    getSpotifyToken(user.uid)
-                        .then((res)=>{
-        
-                            this.setState({page: 'sessionType', token: res.access_token})
-                        })
-                        .catch((err) => {
-                            console.log(err)
-                        })
+                    this.refreshAccessToken('sessionType', user)
                 }
             }
-            else{
+            else if (!this.state.firebaseToken){
                 this.setState({page: 'login'})
             }
         })
     }
   
-    refreshAccessToken = () => {
-        fetch('https://jukebox-2952e.firebaseapp.com/refresh_token?refresh_token=' + this.state.refreshToken)
-                .then((res) => console.log(res))
-                .catch((err) => console.log(err))
+    refreshAccessToken = (changePageTo=null, user=this.state.user) => {
+        getSpotifyToken(user.uid)
+        .then((res)=>{
+            const token = res.access_token
+            changePageTo === null ? this.setState({token: token}) :
+                                    this.setState({page: 'sessionType', token: token})
+
+            spotifyApi.setAccessToken(token)
+        })
+        .catch((err) => {
+            console.log(err)
+        })
     }
 
     getHashParams = () => {
@@ -150,8 +148,6 @@ class App extends Component {
     getUserPlaylists = (user, options, callback) => {
         spotifyApi.getUserPlaylists(user.id, options, callback)
         // spotifyApi.transferMyPlayback()
-    
-
     }
 
     getPlaylistTracks = (user, playlistID, options, callback) => {
@@ -186,13 +182,16 @@ class App extends Component {
     const user = this.state.user
     if(currentPage === 'sessionType') 
         page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} 
-                            user={user} setRoomCode={this.setRoomCode} />
+                            user={user} setRoomCode={this.setRoomCode}/>
     else if(currentPage === 'dashboard') 
         page = <Dashboard user={user} 
                 apiRef={spotifyApi} dbRef={this.props.dbRef} 
-                roomCode={this.state.roomRef} accessToken={this.state.token}/>
+                roomCode={this.state.roomRef} accessToken={this.state.token} 
+                updateToken={this.refreshAccessToken}/>
     else if(currentPage === 'trackImport') 
-        page = <ImportTrack roomCode={this.state.roomRef} user={user} apiRef={spotifyApi} roomCode={this.state.roomRef} changePage={this.changePage}/>
+        page = <ImportTrack roomCode={this.state.roomRef} user={user} apiRef={spotifyApi}
+                roomCode={this.state.roomRef} changePage={this.changePage}
+                updateToken={this.refreshAccessToken}/>
     else if(currentPage === 'login')
         page =  <Login/>
     
