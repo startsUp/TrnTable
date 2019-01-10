@@ -1,8 +1,7 @@
 import React, { Component } from 'react'
 import '../../App.css'
-import {ReactComponent as PlayIcon} from '../../res/images/player-play.svg'
-import {ReactComponent as PauseIcon} from '../../res/images/player-pause.svg'
-import {ReactComponent as NextIcon} from '../../res/images/player-next.svg'
+import CurrentTrack from './track'
+import PlayerControls from './playerControls'
 class SpotifyPlayer extends Component {
 constructor(props) {
     super(props)
@@ -30,16 +29,16 @@ componentDidMount = () => {
     this.playerCheckInterval = setInterval(() => this.checkForPlayer(), 1000)
 }
     
-updateTrackForGuests = () => {
-    this.props.dbRef
-                .collection('rooms')
-                .doc(this.props.roomCode)
-                .collection('nowPlaying')
-                .doc('track')
-                .set({
-                    track: this.state.track
-                })
-}
+// updateTrackForGuests = () => {
+//     this.props.dbRef
+//                 .collection('rooms')
+//                 .doc(this.props.roomCode)
+//                 .collection('nowPlaying')
+//                 .doc('track')
+//                 .set({
+//                     track: this.state.track
+//                 })
+// }
 
 // when we receive a new update from the player
 onStateChanged(playerState) {
@@ -54,7 +53,7 @@ onStateChanged(playerState) {
     if(currentTrack.id === this.state.track.id)
         return
 
-    this.updateTrackForGuests()
+    this.props.updateCurrentTrack()
 
     const artURL = currentTrack.album.images[0].url
     const trackName = currentTrack.name
@@ -150,6 +149,14 @@ transferPlaybackHere() {
     const { playlistRef } = this.props
     // https://beta.developer.spotify.com/documentation/web-api/reference/player/transfer-a-users-playback/
     this.props.apiRef.transferMyPlayback([deviceId], {play: false})
+        .catch(err => {
+            console.log(err)
+            if(err.status === 401){
+                this.props.updateToken()
+                    .then(this.transferMyPlayback())
+            }
+            
+        })
 }
 
 startPlaylistPlayback = () => {
@@ -163,33 +170,21 @@ render() {
     const {
     token,
     error,
-    playing
+    playing,
+    track
     } = this.state
-    const { trackName, artURL, albumName, artistName } = this.state.track
+
     console.log(this.state)
     return (
     <div className='spotify-player-container'>
         {error && <p>Error: {error}</p>}
         <div>      
-            <p><img src={artURL}/></p> 
-            <p>Artist: {artistName}</p>
-            <p>Track: {trackName}</p>
-            <p>Album: {albumName}</p>
-            <p>
-                <button onClick={() => this.onPrevClick()}>
-                    <NextIcon className='player-next-icon' id='player-prev'/>
-                </button>
-                <button onClick={() => this.onPlayClick()}>
-                    {playing ? 
-                        <PauseIcon className='player-icon'/> 
-                        : 
-                        <PlayIcon className='player-icon'/>
-                    }
-                </button>
-                <button onClick={() => this.onNextClick()}>
-                    <NextIcon className='player-next-icon' id='player-next'/>
-                </button>
-            </p>
+            <CurrentTrack track={track}/>
+            <PlayerControls 
+                togglePlay={this.onPlayClick} 
+                playing={playing}
+                votingEnabled={false}
+            />
         </div>
     </div>
     )

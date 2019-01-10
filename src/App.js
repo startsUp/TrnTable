@@ -3,7 +3,6 @@ import Login from './pages/login'
 import Dashboard from './pages/dashboard'
 import SessionType from './pages/session'
 import ImportTrack from './pages/trackImport'
-import SpotifyPlayer from './pages/components/spotifyPlayer'
 import { getSpotifyToken } from './helpers'
 import logo from './res/images/logo.png'
 import './App.css'
@@ -50,19 +49,30 @@ class App extends Component {
         const refreshToken = params.refresh_token
         
 		if (token) {
-		  spotifyApi.setAccessToken(token)
+            window.history.replaceState(null, null, ' ')
+            spotifyApi.setAccessToken(token)
         }
-        
-        
+        var landingPage = 'sessionType'
+        const playerTesting = true
+        var sessionType = null
+        var roomRef = null
+        if(playerTesting){
+             landingPage = 'dashboard'
+             roomRef = 'E1GM'
+             sessionType = 'host'
+        }
 		this.state = {
           loggedIn: token ? true : false,
-          page: token ? 'sessionType':'loading', //original : sType, login 
-          roomRef: null,
+
+          page: token ? landingPage:'loading', //original : sType, login
+          roomRef: roomRef, //temp room for testing
           user: null, 
           token: token,
+          landingPage: landingPage,
           firebaseToken: firebaseToken,
           refreshToken: refreshToken,
-          queue: []
+          queue: [], 
+          sessionType: sessionType,
         }
         
     }
@@ -81,9 +91,9 @@ class App extends Component {
                 this.setState({user: user})
                 //get access token and refresh token
                 if(this.state.token)
-                    this.setState({page: 'sessionType'})
+                    this.setState({page: this.state.landingPage})
                 else{
-                    this.refreshAccessToken('sessionType', user)
+                    this.refreshAccessToken(this.state.landingPage, user)
                 }
             }
             else if (!this.state.firebaseToken){
@@ -93,17 +103,18 @@ class App extends Component {
     }
   
     refreshAccessToken = (changePageTo=null, user=this.state.user) => {
-        getSpotifyToken(user.uid)
-        .then((res)=>{
-            const token = res.access_token
-            changePageTo === null ? this.setState({token: token}) :
-                                    this.setState({page: 'sessionType', token: token})
+        console.log('refreshing', changePageTo)
+        return getSpotifyToken(user.uid)
+                .then((res)=>{
+                    const token = res.access_token
+                    changePageTo === null ? this.setState({token: token}) :
+                                            this.setState({page: changePageTo, token: token})
 
-            spotifyApi.setAccessToken(token)
-        })
-        .catch((err) => {
-            console.log(err)
-        })
+                    spotifyApi.setAccessToken(token)
+                })
+                .catch((err) => {
+                    console.log(err)
+                })
     }
 
     getHashParams = () => {
@@ -120,10 +131,17 @@ class App extends Component {
     }
     
     changePage = (nextPage, tracks=null) => {
-        if(this.state.page === 'trackImport' && nextPage === 'dashboard') 
-            this.createPlaylist(this.getDate() + ' TrnTable Session')
-        this.setState({page: nextPage})
-        
+        if(nextPage === 'dashboard') {
+            if(this.state.page === 'trackImport'){
+                this.setState({page: 'loading'})
+                this.createPlaylist(this.getDate() + ' TrnTable Session', tracks)
+            }
+            else{
+                this.setState({page: 'dashboard', sessionType: 'guest'})
+            }
+        }  
+        else
+            this.setState({page: nextPage})  
     }
     getDate = () => {
         var monthNames = [
@@ -159,27 +177,51 @@ class App extends Component {
         this.setState({roomRef: roomCode})
     }
 
-    createPlaylist = (name) => {
-        spotifyApi.createPlaylist(this.state.user.id, {name: name})
+    createPlaylist = (name, tracks) => {
+        spotifyApi.createPlaylist(this.state.user.uid, {name: name})
                 .then((playlist) => {
                     var playlistObj = {href: playlist.href, uri: playlist.uri, id: playlist.id, owner: playlist.owner}
                     this.setState({playlistRef: playlistObj}) //store playlist object in state
 
                     this.props.dbRef
                                 .collection('rooms')
-                                .doc(this.props.roomCode)
-                                .collection('playlist')
+                                .doc(this.state.roomRef)
                                 .set(playlistObj)
+                                
 
+                })
+                .then(() => {
+                    //write all tracks added by host, to the database (as a batch)
+                    
+                    var batch = this.props.dbRef.batch()
+                    
+                    tracks.forEach((track) => { 
+                        //generate unique track id
+                        var trackRef = this.props.dbRef.collection('tracksInRoom')
+                                                       .doc(this.state.roomRef)
+                                                       .collection('tracks').doc()
+                        batch.set(trackRef, {track: track})
+                    })
+                
+                    batch.commit().then(
+                        this.setState({page: 'dashboard', sessionType: 'host'})
+                    )
+                    .catch(err => console.log(err))
+                
+                })
+                .catch(err => {                                                         
+                    if(err.status === 401){
+                        this.updateToken()
+                            .then(this.createPlaylist(name))
+                    }
                 }) 
-                .catch((err) => console.log(err))
     }
 
   render() {
 
     var page = <LoadingScreen/>
     const currentPage = this.state.page
-    const user = this.state.user
+    const { user, sessionType } = this.state
     if(currentPage === 'sessionType') 
         page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} 
                             user={user} setRoomCode={this.setRoomCode}/>
@@ -187,7 +229,7 @@ class App extends Component {
         page = <Dashboard user={user} 
                 apiRef={spotifyApi} dbRef={this.props.dbRef} 
                 roomCode={this.state.roomRef} accessToken={this.state.token} 
-                updateToken={this.refreshAccessToken}/>
+                updateToken={this.refreshAccessToken} type={sessionType}/>
     else if(currentPage === 'trackImport') 
         page = <ImportTrack roomCode={this.state.roomRef} user={user} apiRef={spotifyApi}
                 roomCode={this.state.roomRef} changePage={this.changePage}

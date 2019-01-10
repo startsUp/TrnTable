@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
 import '../App.css'
 import appIcon from '../res/images/logo.webp'
-import SpotifyPlayer from './components/spotifyPlayer';
+import SpotifyPlayer from './components/spotifyPlayer'
+import GuestPlayer from './components/guestPlayer'
 
 const Track = props => (
     // url, albumArt.url, albumName, artists
@@ -35,7 +36,8 @@ class Dashboard extends Component {
             playlistRef: null,
             fetchTimestamp: null, //do (= new Date()) after initial fetch of queue
             unsubscribe: null,
-            tracks: []
+            tracks: [],
+            sessionType: this.props.type
         }
     }
 
@@ -43,27 +45,33 @@ class Dashboard extends Component {
 
     componentDidMount = () => {
 
-       // var getFirstFetch = this.getTracks()
-        // var unsubscribe = this.props.dbRef.collection('tracksInRoom').doc(this.props.roomCode).collection('tracks').orderBy('addedTimestamp').startAt(this.state.fetchTimestamp)
-        //         .onSnapshot((snapshot) => {
-        //             console.log(snapshot.docs)
+        //if sessiontype is host then subscribe to
+      
+        var getFirstFetch = this.getTracks()
+        var unsubscribe = this.props.dbRef.collection('tracksInRoom').doc(this.props.roomCode).collection('tracks').orderBy('addedTimestamp').startAt(this.state.fetchTimestamp)
+                .onSnapshot((snapshot) => {
+                    console.log(snapshot.docs)
 
-        //                 snapshot.docChanges().forEach((change) => {
-        //                     if (change.type === "added") {
-        //                         var doc = change.doc
-        //                         let source = doc.metadata.hasPendingWrites ? 'Local' : 'Server'
-        //                         if (source === 'Server') {
-        //                             this.setState({ //update local queue
-        //                                 tracks: [] 
-        //                             })
-        //                         } else {
-        //                         // Do nothing, it's a local update so ignore it
-        //                         }
+                        snapshot.docChanges().forEach((change) => {
+                            if (change.type === "added") {
+                                var doc = change.doc
+                                let source = doc.metadata.hasPendingWrites ? 'Local' : 'Server'
+                                if (source === 'Server') {
+                                    this.setState({ //update local queue
+                                        tracks: [] 
+                                    })
+                                } else {
+                                // Do nothing, it's a local update so ignore it
+                                }
                                 
-        //                     }   
-        //                 })
-        //             })
-        // this.setState({unsubscribe: unsubscribe})
+                            }   
+                        })
+                    })
+        this.setState({unsubscribe: unsubscribe})
+    }
+
+    updateCurrentTrack = () => {
+        
     }
 
     getTracks = () => {
@@ -76,6 +84,8 @@ class Dashboard extends Component {
         const tracks = this.state.queue.map((track) => (
                 <Track key={track.id} name={track.name} artist={track.artist} albumArtURL={track.albumArt}/>
             ))
+        
+        const { sessionType } = this.state
 
         return (
             <div className='dashboard-container'>
@@ -87,7 +97,14 @@ class Dashboard extends Component {
                         Placeholder's Session
                     </div>
                 </div>
-                <SpotifyPlayer apiRef={this.props.apiRef} user={this.props.user} accessToken={this.props.accessToken}/>
+                {sessionType === 'host' ?
+                    <SpotifyPlayer apiRef={this.props.apiRef} user={this.props.user} 
+                        accessToken={this.props.accessToken} updateToken={this.props.updateToken}
+                        updateCurrentTrack={this.updateCurrentTrack}/>
+                    :
+                    <GuestPlayer apiRef={this.props.apiRef} user={this.props.user} 
+                        accessToken={this.props.accessToken} updateToken={this.props.updateToken}/>
+                }
                 <div className='dashboard-queue-container'>
                     {tracks}
                 </div>

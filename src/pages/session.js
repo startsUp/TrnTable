@@ -111,7 +111,7 @@ class SessionType extends Component {
             dbRef.collection('rooms')
                     .doc(roomCode)
                     .collection('users')
-                    .doc(this.props.user.id)
+                    .doc(this.props.user.uid)
                     .set({joinedTimestamp: new Date()})
             
         })
@@ -189,6 +189,7 @@ class SessionType extends Component {
 
 
     render() {
+        console.log(this.props.user)
         var card = null
         var headerInfo = null
         if(this.state.sessionType){

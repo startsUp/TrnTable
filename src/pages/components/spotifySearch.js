@@ -12,14 +12,23 @@ class SpotifySearch extends Component {
     onSearch = () => {
         const query = document.getElementById('spotify-search-input').value
         if (query === "") return
-        
+        this.getSearchResults(query)
+    }
+
+    getSearchResults = (query) => {
         const spotifyApi = this.props.apiRef
 
         spotifyApi.search(query, ['track', 'album', 'playlist', 'artist'])
                    .then((res)=> {
-               
                        document.getElementById('spotify-search-input').value = ""
-                        this.props.onSearchResults(res)})
+                        this.props.onSearchResults(res)
+                    })
+                    .catch(err => {
+                        if(err.status === 401){
+                            this.props.updateToken()
+                                .then(this.getSearchResults(query))
+                        }
+                    })
     }
 
     render(){

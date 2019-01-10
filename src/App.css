@@ -134,6 +134,25 @@
 #player-prev{
     transform: rotate(180deg);
 }
+
+.control-icon{
+    height: 3rem;
+    width: 3rem;
+    fill: #1ED660;
+    border-radius: 3em;
+    border: 2px solid #1ED660;
+}
+.control-icon:hover{
+    fill: white;
+    cursor: pointer;
+    border: 2px solid white;
+}
+
+
+.controls-container{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
   /*---------------------------------------------------------- 
   ------------------------------------------------------------  
                           POPUP 

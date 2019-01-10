@@ -94,13 +94,22 @@ class ImportTrack extends Component {
 	}
 	
     componentDidMount = () => {
-        this.props.apiRef.getMySavedTracks({limit:50})
-            .then(data => {
-                this.setState({userSavedSongs: this.parseData('songs', data), 
-                                savedSongsOffset:50, totalSavedSongs: data.total})
-            })
+        this.getSavedTracks()    
     }
 
+    getSavedTracks = () => {
+        this.props.apiRef.getMySavedTracks({limit:50})
+        .then(data => {
+            this.setState({userSavedSongs: this.parseData('songs', data), 
+                            savedSongsOffset:50, totalSavedSongs: data.total})
+        })
+        .catch(err => {
+            if(err.status === 401){
+                this.props.updateToken()
+                    .then(this.getSavedTracks())
+            }
+        }) 
+    }
     parseData = (dataType, data, albumRef=null) => {
         if(dataType === 'songs' || dataType === 'albumSongs')
         {
@@ -200,6 +209,12 @@ class ImportTrack extends Component {
                         this.setState({currentAlbum: {id: item.id, tracks: this.parseData('albumSongs', data, item)}, 
                                         view:'albumTracks',})
                     })
+                    .catch(err => {
+                        if(err.status === 401){
+                            this.props.updateToken()
+                                .then(this.showTracksFor(item))
+                        }
+                    }) 
             }else
                 this.setState({view: 'albumTracks'})
         }
@@ -210,6 +225,12 @@ class ImportTrack extends Component {
                         this.setState({currentPlaylist: {id: item.id, tracks: this.parseData('songs', data)}, 
                                         view:'playlistTracks'})
                     })
+                    .catch(err => {
+                        if(err.status === 401){
+                            this.props.updateToken()
+                                .then(this.showTracksFor(item))
+                        }
+                    }) 
             }
             this.setState({view:'playlistTracks'})
 
@@ -273,6 +294,12 @@ class ImportTrack extends Component {
                         savedSongsOffset: this.savedSongsOffset+50, view:'songs', totalSavedSongs: data.total})
                     
                 })
+                .catch(err => {
+                    if(err.status === 401){
+                        this.props.updateToken()
+                            .then(this.showLibrary(type))
+                    }
+                }) 
             }
             this.setState({view: 'songs'})
             
@@ -289,8 +316,14 @@ class ImportTrack extends Component {
                                     this.setState({userPlaylists: this.parseData(type, data), 
                                         playlistOffset: this.playlistOffset+50,view:'playlist',
                                         totalSavedPlaylist:data.total}
-                        )
+                                    )
                                 })
+                                .catch(err => {
+                                    if(err.status === 401){
+                                        this.props.updateToken()
+                                            .then(this.showLibrary(type))
+                                    }
+                                }) 
                 }
                 this.setState({view: 'playlist'})
                                 
@@ -303,8 +336,14 @@ class ImportTrack extends Component {
                                 .then(data =>{
                                     this.setState({userAlbums: this.parseData(type, data), view:'albums',
                                         albumOffset: this.albumOffset+50, totalSavedAlbums: data.total}
-                        )
+                                    )
                                 })
+                                .catch(err => {
+                                    if(err.status === 401){
+                                        this.props.updateToken()
+                                            .then(this.showLibrary(type))
+                                    }
+                                }) 
                                     
             }
             this.setState({view: 'albums'})
