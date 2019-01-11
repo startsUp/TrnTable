@@ -4,6 +4,7 @@ import appIcon from '../res/images/logo.webp'
 import SpotifyPlayer from './components/spotifyPlayer'
 import GuestPlayer from './components/guestPlayer'
 
+
 const Track = props => (
     // url, albumArt.url, albumName, artists
     <div className='track-card-container'>
@@ -28,6 +29,14 @@ const TrackQueue = props => {
 
 }
 
+const DashboardHeader = props => {
+    return(
+        <div>
+            
+        </div>
+    )
+}
+
 class Dashboard extends Component {
     constructor(props){
         super(props)
@@ -37,7 +46,8 @@ class Dashboard extends Component {
             fetchTimestamp: null, //do (= new Date()) after initial fetch of queue
             unsubscribe: null,
             tracks: [],
-            sessionType: this.props.type
+            sessionType: this.props.type,
+            activeDevice: null
         }
     }
 
@@ -82,19 +92,23 @@ class Dashboard extends Component {
     }
     render() {
         
-        const { sessionType } = this.state
-
+        const host = (this.state.sessionType === 'host')
+        const { activeDevice } = this.state
         return (
             <div className='dashboard-container'>
                 <div className='dashboard-header'>
                     <div>
                         {appIcon}
                     </div>
+                    {host ? p
                     <div>
-                        Placeholder's Session
+                        {activeDevice}
                     </div>
+                    <div>
+                        {}
+                    </div>}
                 </div>
-                {sessionType === 'host' ?
+                {host ?
                     <SpotifyPlayer apiRef={this.props.apiRef} user={this.props.user} 
                         accessToken={this.props.accessToken} updateToken={this.props.updateToken}
                         updateCurrentTrack={this.updateCurrentTrack}/>

@@ -146,12 +146,21 @@
     fill: white;
     cursor: pointer;
     border: 2px solid white;
+    
 }
 
-
+#play{
+    height: 5rem;
+    width: 5rem;
+}
+#pause{
+    height: 5rem;
+    width: 5rem;
+}
 .controls-container{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
 }
   /*---------------------------------------------------------- 
   ------------------------------------------------------------  
@@ -674,8 +683,6 @@
       height: 100vh;
       width: 100vw; /*change this on mobile to 100*/ 
       margin: auto;
-
-      border-radius: 1em;
   }
 
 

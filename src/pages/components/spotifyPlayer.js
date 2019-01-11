@@ -51,7 +51,10 @@ onStateChanged(playerState) {
         duration,
     } = playerState.track_window
     
-    console.log(playerState)
+    const playing = !playerState.paused
+
+    if(playing !== this.state.playing)
+        this.setState({playing: playing})
     if(currentTrack.id === this.state.track.id)
         return
 
@@ -63,7 +66,7 @@ onStateChanged(playerState) {
     const artistName = currentTrack.artists
                                 .map(artist => artist.name)
                                 .join(", ")
-    const playing = !playerState.paused
+    
     const id = currentTrack.id
     this.setState({track:{
             id: id,
@@ -72,7 +75,6 @@ onStateChanged(playerState) {
             trackName: trackName,
             albumName: albumName,
             artistName: artistName,
-            playing: playing,
             artURL: artURL
          }})
     } else {
@@ -118,7 +120,7 @@ checkForPlayer() {
     // if the Spotify SDK has loaded
     if (window.Spotify !== null && window.Spotify !== undefined) {
     
-        
+     
     // cancel the interval
     clearInterval(this.playerCheckInterval)
     // create a new player
@@ -138,7 +140,7 @@ onPrevClick() {
     this.player.previousTrack()
 }
 
-onPlayClick() {
+onPlayClick = () => {
     this.player.togglePlay()
 }
 
@@ -178,7 +180,7 @@ render() {
 
     return (
     <div className='spotify-player-container'>
-        {error && <p>Error: {error}</p>}
+        {error && <p style={{background:'white'}}>Error: {error}</p>}
         <div>      
             <CurrentTrack track={track}/>
             <PlayerControls 
