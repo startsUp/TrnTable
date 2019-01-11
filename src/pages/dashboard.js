@@ -46,7 +46,7 @@ class Dashboard extends Component {
     componentDidMount = () => {
 
         //if sessiontype is host then subscribe to
-      
+        console.log(this.props.firebase.auth().currentUser)
         var getFirstFetch = this.getTracks()
         var unsubscribe = this.props.dbRef.collection('tracksInRoom').doc(this.props.roomCode).collection('tracks').orderBy('addedTimestamp').startAt(this.state.fetchTimestamp)
                 .onSnapshot((snapshot) => {
@@ -81,9 +81,6 @@ class Dashboard extends Component {
         this.state.unsubscribe()
     }
     render() {
-        const tracks = this.state.queue.map((track) => (
-                <Track key={track.id} name={track.name} artist={track.artist} albumArtURL={track.albumArt}/>
-            ))
         
         const { sessionType } = this.state
 
@@ -105,9 +102,6 @@ class Dashboard extends Component {
                     <GuestPlayer apiRef={this.props.apiRef} user={this.props.user} 
                         accessToken={this.props.accessToken} updateToken={this.props.updateToken}/>
                 }
-                <div className='dashboard-queue-container'>
-                    {tracks}
-                </div>
             </div> 
         )
 	}

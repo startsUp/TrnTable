@@ -16,9 +16,9 @@ const PlayerControls = props => (
         </div>
         <div>
             {props.playing ? 
-                <PlayIcon onClick={props.togglePlay} className='control-icon'/>
+                <PauseIcon onClick={props.togglePlay} className='control-icon' id='pause'/>
                 :
-                <PauseIcon onClick={props.togglePlay} className='control-icon'/>
+                <PlayIcon onClick={props.togglePlay} className='control-icon' id='play'/>
             }
         </div> 
         <div>

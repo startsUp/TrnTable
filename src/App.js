@@ -64,7 +64,7 @@ class App extends Component {
 		this.state = {
           loggedIn: token ? true : false,
 
-          page: token ? landingPage:'loading', //original : sType, login
+          page:'loading', //original : sType, login
           roomRef: roomRef, //temp room for testing
           user: null, 
           token: token,
@@ -86,14 +86,17 @@ class App extends Component {
         }
             
         
-        this.props.firebase.auth().onAuthStateChanged((user)=>{
+        this.props.firebase.auth().onAuthStateChanged(async (user)=>{
             if(user){
                 this.setState({user: user})
-                //get access token and refresh token
+                // get access token and refresh token
+                console.log('state changed', user)
                 if(this.state.token)
                     this.setState({page: this.state.landingPage})
                 else{
-                    this.refreshAccessToken(this.state.landingPage, user)
+                    await this.refreshAccessToken(user)
+                    console.log('got spotify token', spotifyApi.getAccessToken())
+                    this.setState({page: this.state.landingPage})
                 }
             }
             else if (!this.state.firebaseToken){
@@ -102,19 +105,23 @@ class App extends Component {
         })
     }
   
-    refreshAccessToken = (changePageTo=null, user=this.state.user) => {
-        console.log('refreshing', changePageTo)
-        return getSpotifyToken(user.uid)
-                .then((res)=>{
-                    const token = res.access_token
-                    changePageTo === null ? this.setState({token: token}) :
-                                            this.setState({page: changePageTo, token: token})
+    refreshAccessToken = async (user=this.state.user) => {
+        return new Promise((resolve, reject)=>{
+            getSpotifyToken(user.uid)
+            .then((res)=>{
+                const token = res.access_token
+                spotifyApi.setAccessToken(token)
+                this.setState({token: token})
+            })
+            .then(()=>{
+                resolve()
+            })
+            .catch((err) => {
+                console.log(err)
+                reject(err)
+            })
+        })
 
-                    spotifyApi.setAccessToken(token)
-                })
-                .catch((err) => {
-                    console.log(err)
-                })
     }
 
     getHashParams = () => {
@@ -226,7 +233,7 @@ class App extends Component {
         page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} 
                             user={user} setRoomCode={this.setRoomCode}/>
     else if(currentPage === 'dashboard') 
-        page = <Dashboard user={user} 
+        page = <Dashboard user={user} firebase={this.props.firebase}
                 apiRef={spotifyApi} dbRef={this.props.dbRef} 
                 roomCode={this.state.roomRef} accessToken={this.state.token} 
                 updateToken={this.refreshAccessToken} type={sessionType}/>

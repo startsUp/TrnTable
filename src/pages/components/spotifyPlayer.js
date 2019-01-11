@@ -5,6 +5,7 @@ import PlayerControls from './playerControls'
 class SpotifyPlayer extends Component {
 constructor(props) {
     super(props)
+    console.log('reset')
     // set the initial state
     this.state = {
         token: this.props.accessToken,
@@ -50,6 +51,7 @@ onStateChanged(playerState) {
         duration,
     } = playerState.track_window
     
+    console.log(playerState)
     if(currentTrack.id === this.state.track.id)
         return
 
@@ -116,14 +118,14 @@ checkForPlayer() {
     // if the Spotify SDK has loaded
     if (window.Spotify !== null && window.Spotify !== undefined) {
     
-        console.log(token)
+        
     // cancel the interval
     clearInterval(this.playerCheckInterval)
     // create a new player
     this.player = new window.Spotify.Player({
         name: "TrnTable Web Player",
         getOAuthToken: cb => { cb(token) },
-    })
+    }) 
     // set up the player's event handlers
     this.createEventHandlers()
     
@@ -174,7 +176,6 @@ render() {
     track
     } = this.state
 
-    console.log(this.state)
     return (
     <div className='spotify-player-container'>
         {error && <p>Error: {error}</p>}
