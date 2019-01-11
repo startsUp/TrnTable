@@ -100,13 +100,14 @@ class Dashboard extends Component {
                     <div>
                         {appIcon}
                     </div>
-                    {host ? p
+                    {host ? 'Playing on ${activeDevice}'
+                    : 'Placeholder\'s Session'}
                     <div>
                         {activeDevice}
                     </div>
                     <div>
-                        {}
-                    </div>}
+                        
+                    </div>
                 </div>
                 {host ?
                     <SpotifyPlayer apiRef={this.props.apiRef} user={this.props.user} 

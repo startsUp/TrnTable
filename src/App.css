@@ -18,6 +18,15 @@
     overflow: hidden;
   }
 
+  .app-logo{
+      height: 15em;
+      width: 15em;
+  }
+
+  #record-label{
+    animation: App-logo-spin infinite 2s ease-in-out;
+  }
+
   .loading-logo {
       height: 7rem;
     animation: App-logo-spin infinite 2s ease-in-out;
