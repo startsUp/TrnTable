@@ -4,7 +4,7 @@ import Dashboard from './pages/dashboard'
 import SessionType from './pages/session'
 import ImportTrack from './pages/trackImport'
 import { getSpotifyToken } from './helpers'
-import logo from './res/images/logo.png'
+import AppLogo from './pages/components/logo'
 import './App.css'
 import SpotifyWebApi from 'spotify-web-api-js'
 const spotifyApi = new SpotifyWebApi()
@@ -33,9 +33,8 @@ const LoadingScreen = () => (
 		<div className='loading-container'>
             <div id='logo-container'>
                 <p id='logo-title'>TrnTable</p>
-			    <img src={logo} className="loading-logo" alt="Loading" />
+			    <AppLogo styleName='app-logo' animate={true}/>
             </div>
-
 		</div>
 )
 

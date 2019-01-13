@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import '../../App.css'
 import CurrentTrack from './track'
 import PlayerControls from './playerControls'
+import ConfirmActionPopup from './confirmPopup.js'
 class SpotifyPlayer extends Component {
 constructor(props) {
     super(props)
@@ -20,6 +21,7 @@ constructor(props) {
         playing: false,
         position: 0,
         duration: 1,
+        popup: {}
     }
     // this will later be set by setInterval
     this.playerCheckInterval = null
@@ -51,6 +53,10 @@ onStateChanged(playerState) {
         duration,
     } = playerState.track_window
     
+    if(this.state.error){
+        this.setState({error: ""})
+    }
+    
     const playing = !playerState.paused
 
     if(playing !== this.state.playing)
@@ -79,7 +85,16 @@ onStateChanged(playerState) {
          }})
     } else {
     // state was null, user might have swapped to another device
-    this.setState({ error: "Looks like you might have swapped to another device?" })
+        this.setState({error: 'Switched Devices',popup: {show: true, 
+            title: '⚠Player Error', 
+            message: 'Spotify Player Interrupted! Looks like you might have switched to another device.',
+            accept: 'Resume Session',
+            deny: 'Stop Session',
+            onAccept: this.startSession,
+            onDeny: this.closePopup,
+            close: this.closePopup,
+        }})
+
     }
 }
 
@@ -107,7 +122,7 @@ createEventHandlers() {
     // set the deviceId variable, then let's try
     // to swap music playback to *our* player!
     await this.setState({ deviceId: device_id })
-    this.transferPlaybackHere()
+    this.transferPlaybackHere(false)
     })
 }
 componentDidUpdate = (prevProps, prevState) =>{
@@ -137,22 +152,26 @@ checkForPlayer() {
 }
 
 onPrevClick() {
+    
     this.player.previousTrack()
 }
 
 onPlayClick = () => {
-    this.player.togglePlay()
+    if(this.state.error)
+        this.transferPlaybackHere(true)
+    else
+        this.player.togglePlay()
 }
 
 onNextClick() {
     this.player.nextTrack()
 }
 
-transferPlaybackHere() {
+transferPlaybackHere(shouldPlay) {
     const { deviceId, token } = this.state
     const { playlistRef } = this.props
     // https://beta.developer.spotify.com/documentation/web-api/reference/player/transfer-a-users-playback/
-    this.props.apiRef.transferMyPlayback([deviceId], {play: false})
+    this.props.apiRef.transferMyPlayback([deviceId], {play: shouldPlay})
         .catch(err => {
             console.log(err)
             if(err.status === 401){
@@ -175,12 +194,13 @@ render() {
     token,
     error,
     playing,
-    track
+    track,
+    popup
     } = this.state
 
     return (
     <div className='spotify-player-container'>
-        {error && <p style={{background:'white'}}>Error: {error}</p>}
+        {error && <ConfirmActionPopup popupInfo={popup}/>}
         <div>      
             <CurrentTrack track={track}/>
             <PlayerControls 

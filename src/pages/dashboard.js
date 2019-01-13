@@ -3,7 +3,8 @@ import '../App.css'
 import appIcon from '../res/images/logo.webp'
 import SpotifyPlayer from './components/spotifyPlayer'
 import GuestPlayer from './components/guestPlayer'
-
+import AppLogo from './components/logo'
+import {ReactComponent as SettingsIcon} from '../res/images/dashboard-settings.svg'
 
 const Track = props => (
     // url, albumArt.url, albumName, artists
@@ -94,28 +95,34 @@ class Dashboard extends Component {
         
         const host = (this.state.sessionType === 'host')
         const { activeDevice } = this.state
+        const { roomCode, 
+                user, 
+                apiRef, 
+                updateToken, 
+                accessToken } = this.props 
+
         return (
             <div className='dashboard-container'>
                 <div className='dashboard-header'>
-                    <div>
-                        {appIcon}
+                    <div className='dashboard-roominfo'>
+                        <AppLogo styleName='dashboard-logo' text={roomCode}/>
+                        {host && <div id='host-roomcode'>{roomCode}</div>}
                     </div>
-                    {host ? 'Playing on ${activeDevice}'
-                    : 'Placeholder\'s Session'}
-                    <div>
-                        {activeDevice}
+                    <div className='dashboard-title'>
+                        { host ? user.displayName + '\'s Session' :
+                            'TrnTable Session' }
                     </div>
-                    <div>
-                        
+                    <div className='dashboard-settings-container'>
+                        <SettingsIcon id='settings-logo'/>
                     </div>
                 </div>
                 {host ?
-                    <SpotifyPlayer apiRef={this.props.apiRef} user={this.props.user} 
-                        accessToken={this.props.accessToken} updateToken={this.props.updateToken}
+                    <SpotifyPlayer apiRef={apiRef} user={user} 
+                        accessToken={accessToken} updateToken={updateToken}
                         updateCurrentTrack={this.updateCurrentTrack}/>
                     :
-                    <GuestPlayer apiRef={this.props.apiRef} user={this.props.user} 
-                        accessToken={this.props.accessToken} updateToken={this.props.updateToken}/>
+                    <GuestPlayer apiRef={apiRef} user={user} 
+                        accessToken={accessToken} updateToken={updateToken}/>
                 }
             </div> 
         )

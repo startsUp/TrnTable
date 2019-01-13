@@ -1,13 +1,13 @@
 import React, { Component } from 'react'
 import '../App.css'
 import icon from '../res/images/logo.webp'
-import {ReactComponent as AppIcon} from '../res/images/logo-svg.svg'
+import AppLogo from './components/logo'
 class Login extends Component {
     render() {
     return (
 		<div className='login-page-container'>
 			<div className='login-page-logo'>
-				<AppIcon className='app-logo'/>
+				<AppLogo styleName='app-logo' animate={true}/>
 				<div className='login-page-title'>TrnTable</div>
 			</div>
 			<div>

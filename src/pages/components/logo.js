@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-100 -100 200 200">
+import React, { Component } from 'react'
+const AppLogo = props => (
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-100 -100 200 200" className={props.styleName}>
     <defs>
         <pattern patternUnits="userSpaceOnUse" width="462.222" height="265" patternTransform="translate(747.778 285)" id="a">
             <path fill="#1ed660" stroke-width="25.116" d="M747.778 285H1210v265H747.778z" transform="translate(-747.778 -285)"/>
@@ -13,11 +15,16 @@
         </pattern>
     </defs>
     <circle r="90" stroke="url(#a)" stroke-width="12"/>
-    <circle r="60" stroke="url(#a)" fill="#191414" stroke-width="2.5"/>
+    <g id={props.animate ? 'record-label' : ''}>
+    <circle r="60" stroke="url(#a)" fill="#191414"stroke-width="2.5"/>
     <circle r="25" fill="url(#a)"/>
     <circle r="5" stroke="#fff"/>
+</g>
     <g stroke-linejoin="round" stroke="url(#a)">
         <path d="M42.813-82.723h3.355v78.261h-3.355z" stroke-width="1.8"/>
         <path d="M40.633-13.593h8.015V4.01h-8.015z" stroke-width="2.076"/>
     </g>
-</svg>
+   </svg>
+
+)
+export default AppLogo
