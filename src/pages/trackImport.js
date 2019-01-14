@@ -6,7 +6,7 @@ import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
 import placeholderIcon from '../res/images/spotifyIcon.png'
 import {ReactComponent as LoadingIcon} from '../res/images/loading.svg'
 import {ReactComponent as QueueIcon} from '../res/images/twotone-playlist_add-24px.svg'
-import {ReactComponent as StartIcon} from '../res/images/twotone-video_library-24px.svg'
+import {ReactComponent as StartIcon} from '../res/images/import-done.svg'
 import ConfirmActionPopup from './components/confirmPopup'
 import Header from './components/header'
 import SpotifySearch from './components/spotifySearch'
@@ -36,21 +36,22 @@ const LibrarySidebar = props => (
 const ImportContainer = props => (
     <div className='import-container'>
         <div id='import-header-container'>
-            <div className='icon-container'><MenuIcon id={props.showSidebar ? 'icon-active' : 'menu-icon'} onClick={props.toggleSidebar}/></div>
+            <div className='icon-container'><MenuIcon id={props.showSidebar ? 'icon-active' : 'menu-icon'} className='import-icons' onClick={props.toggleSidebar}/></div>
             <SpotifySearch apiRef={props.apiRef} onSearchResults={props.displayResults}/>
             <div className='mobile-import-container'>
                 <div className='mobile-icon-container'>
-                    <QueueIcon id={props.view === 'queue' ? 'active-icon': ''} onClick={()=>props.showQueue(true)} className='mobile-import-icons'/>
+                    <QueueIcon id={props.view === 'queue' ? 'active-icon': ''} className='import-icons'
+                    onClick={()=>props.showQueue(true)}/>
                 </div>
                 <div className='mobile-icon-container'>
-                    <StartIcon className='mobile-import-icons' onClick={() => props.startSession('startSession')}/>
+                    <StartIcon className='import-icons'
+                    onClick={() => props.startSession('startSession')}/>
                 </div>
             </div> 
 
 			<div className='show-queue-button' id={props.view === 'queue' ? 'active': ''} onClick={()=>props.showQueue(true)}> Queue </div> 
 			<div className='show-queue-button' onClick={() => props.startSession('startSession')}> Start Session </div>
         </div>
-        <Divider customStyle={{backgroundColor:'#1ED660', width:'100%', height:'0.05em'}}/>
         <div className='import-main-container' id={props.showSidebar ? 'import-w-sidebar': ''}>
             {props.showSidebar && <LibrarySidebar showLibrary={props.showLibrary} view={props.view} />} 
             {props.view === 'search' ?

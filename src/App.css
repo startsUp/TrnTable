@@ -61,7 +61,7 @@ to {
 
 
 
-.icon-container, .list-icon-container, .popup-close-icon{
+.list-icon-container, .popup-close-icon{
 height: 1.5rem;
 width: 1.5rem;
 margin: auto 0;
@@ -109,6 +109,7 @@ font-family: 'sofia_proregular';
 background: white;
 border-radius: 3em;
 max-width: 20em;
+margin: 0 0.5em 0 0.5em;
 }
 
 #spotify-search-input{
@@ -521,7 +522,7 @@ margin: 1em auto;
 
 .list-container, .search-results-container{
     overflow: auto;
-    
+    max-height: inherit;
 }
 
 
@@ -568,7 +569,7 @@ width: 90%;
 max-height: 100%;
 background: rgba(1, 1, 1, 0.8);
 border-radius: 1em;
-grid-template-rows: 4em 1em 36em;
+grid-template-rows: 4em auto;
 padding: 0.5em;
 
 
@@ -584,12 +585,12 @@ margin: auto;
 
 .import-main-container{
 display: grid;
-max-height: 65vh;
+max-height: 70vh; 
 }
 
 #import-w-sidebar{
     /*change*/
-    grid-template-rows: 90% 10%;
+    grid-template-columns: 15% 85%;
 }
 
 #import-head{
@@ -598,49 +599,37 @@ padding: 1em 0 0.5em 0;
 
 #import-header-container{
 display: grid;
-grid-template-columns: 0.7fr 3fr 2fr;
-font-size: 0.8em;
+grid-template-columns: 1fr 10fr 3fr;
+font-size: 1em;
 margin: auto 0;
-justify-items: center;
+padding: 0 0.5em;
 }
 
 .mobile-import-container{
-display: grid;
-grid-template-columns: 1fr 1fr;
-grid-gap: 1em;
-background: rgba(255, 255, 255, 0.1);
-border-radius: 0.8em;
+display: inline-flex;
+justify-content: flex-end;
 /* padding: 0.7em 0.5em 0.2em 1em; */
 }
 .mobile-import-icons{
-height: 2em;
-width: 2em;
-fill: white;
+
+}
+
+.icon-container{
+    display: inline-flex;
+    margin: auto 0;
 }
 
 .mobile-icon-container{
--webkit-box-shadow: 0px 0px 33px 3px rgba(0,0,0,0.75);
--moz-box-shadow: 0px 0px 33px 3px rgba(0,0,0,0.75);
-box-shadow: 0px 0px 3px 3px rgba(0,0,0,0.75);
-background: rgba(255, 255, 255, 0.1);
-border-radius: 0.8em;
-background: rgba(255,255,255,0.1);
-padding:  0 0.5em;
+padding: 0 0.5em;
 }
 
 
 
 .import-library-container{
-
-display: grid;
-grid-template-columns: 1fr 1fr 1fr;
 text-align: unset;
 border-radius: 1em;
 background: rgba(255,255,255,0.1);
 font-family: 'sofia_proregular';
-grid-row-start: 2;
-
-
 }
 
 .import-library-button{
@@ -655,17 +644,23 @@ border-radius: 1em;
 .import-library-button-desc{
 padding: 0.5em;
 }
-#lib-side-divider{
-display: none;
-}
-#import-head{
-display: none;
-}
 
 .import-library-button:hover, .show-queue-button:hover, #active, .popup-button:hover, .list-showmore:hover{
 background-color: #1ED660;
 color: black;
 }
+
+.import-icons{
+    height: 2em;
+    width: 2em;
+    fill: white;
+    cursor: pointer;
+}
+.import-icons:hover{
+    fill: #1ED660;
+    cursor: pointer;
+}
+
 
 .popup-button, .list-showmore{
 font-family: 'sofia_proregular';
@@ -749,7 +744,37 @@ display: none;
 
 /* Extra small devices (phones, 600px and down) */
 @media only screen and (max-width: 600px) {
+    #import-header-container{
+        display: grid;
+        grid-template-columns: 1fr 10fr 3fr;
+        font-size: 0.8em;
+        margin: auto 0;
+        padding: 0 0.5em;
+    }
+    #import-w-sidebar{
+        /*change*/
+        grid-template-columns: 1fr;
+        grid-template-rows: 90% 10%;
+    }
+    
+.import-library-container{
 
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    text-align: unset;
+    border-radius: 1em;
+    background: rgba(255,255,255,0.1);
+    font-family: 'sofia_proregular';
+    grid-row-start: 2;
+    }
+
+    #lib-side-divider{
+    display: none;
+    }
+    #import-head{
+    display: none;
+    }
+        
 } 
 
 /* Small devices (portrait tablets and large phones, 600px and up) */

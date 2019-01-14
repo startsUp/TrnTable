@@ -56,7 +56,7 @@ class App extends Component {
         var sessionType = null
         var roomRef = null
         if(playerTesting){
-             landingPage = 'dashboard'
+             landingPage = 'trackImport'
              roomRef = 'E1GM'
              sessionType = 'host'
         }
