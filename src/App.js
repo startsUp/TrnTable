@@ -52,7 +52,7 @@ class App extends Component {
             spotifyApi.setAccessToken(token)
         }
         var landingPage = 'sessionType'
-        const playerTesting = true
+        const playerTesting = false
         var sessionType = null
         var roomRef = null
         if(playerTesting){
@@ -72,8 +72,9 @@ class App extends Component {
           refreshToken: refreshToken,
           queue: [], 
           sessionType: sessionType,
+          loading: 'Creating spotify playlist ...'
         }
-        
+      
     }
     componentDidMount = () => {
         const {firebaseToken} = this.state
@@ -83,7 +84,8 @@ class App extends Component {
                 .signInWithCustomToken(firebaseToken)
                 .catch(err=> console.log(err))
         }
-            
+        
+        
         
         this.props.firebase.auth().onAuthStateChanged(async (user)=>{
             if(user){
@@ -123,6 +125,23 @@ class App extends Component {
 
     }
 
+    //call with offset 0 and pass in all the tracks to add to the playlist
+    importTracksToPlaylist = (userID, playlistID, tracks, offset) => {
+        return new Promise((resolve, reject) => {
+            if(offset >= tracks.length)
+                resolve()
+
+            var trackBatch = tracks.slice(offset, offset+100) // gets 100 tracks
+            spotifyApi.addTracksToPlaylist(userID, playlistID, trackBatch)
+                .then(() => {
+                    this.importTracksToPlaylist(userID, playlistID, tracks, offset + 100)
+                        .then(() => resolve())
+                        .catch(err => reject(err)) //propogate err up
+                }) //add next batch
+                .catch(err => reject(err))
+        })
+    }
+    
     getHashParams = () => {
 		var hashParams = {}
 		var e, r = /([^&=]+)=?([^&]*)/g,
@@ -136,11 +155,13 @@ class App extends Component {
 		return hashParams
     }
     
-    changePage = (nextPage, tracks=null) => {
+    changePage = (nextPage, tracks=null, playlistRef=null) => {
         if(nextPage === 'dashboard') {
             if(this.state.page === 'trackImport'){
                 this.setState({page: 'loading'})
                 this.createPlaylist(this.getDate() + ' TrnTable Session', tracks)
+                    .then(this.setState({page: 'dashboard', sessionType: 'host'}))
+
             }
             else{
                 this.setState({page: 'dashboard', sessionType: 'guest'})
@@ -184,7 +205,8 @@ class App extends Component {
     }
 
     createPlaylist = (name, tracks) => {
-        spotifyApi.createPlaylist(this.state.user.uid, {name: name})
+        return new Promise((resolve, reject) => {
+            spotifyApi.createPlaylist(this.state.user.uid, {name: name})
                 .then((playlist) => {
                     var playlistObj = {href: playlist.href, uri: playlist.uri, id: playlist.id, owner: playlist.owner}
                     this.setState({playlistRef: playlistObj}) //store playlist object in state
@@ -194,11 +216,11 @@ class App extends Component {
                                 .doc(this.state.roomRef)
                                 .set(playlistObj)
                                 
-
+                    return playlistObj
                 })
-                .then(() => {
+                .then((playlistRef) => {
                     //write all tracks added by host, to the database (as a batch)
-                    
+                 
                     var batch = this.props.dbRef.batch()
                     
                     tracks.forEach((track) => { 
@@ -209,10 +231,17 @@ class App extends Component {
                         batch.set(trackRef, {track: track})
                     })
                 
-                    batch.commit().then(
-                        this.setState({page: 'dashboard', sessionType: 'host'})
-                    )
-                    .catch(err => console.log(err))
+                    batch.commit().then(() => {
+                        this.importTracksToPlaylist(this.state.user.id, playlistRef.id, tracks.map(track => track.uri), 0)
+                        .then(resolve())
+                
+                    })
+                        // this.setState({page: 'dashboard', sessionType: 'host'})
+                       
+                    .catch(err => {
+                        console.log(err)
+                        reject(err)
+                    })
                 
                 })
                 .catch(err => {                                                         
@@ -220,12 +249,17 @@ class App extends Component {
                         this.updateToken()
                             .then(this.createPlaylist(name))
                     }
+                    else{
+                        reject(err)
+                    }
                 }) 
+        })
+        
     }
 
   render() {
 
-    var page = <LoadingScreen/>
+    var page = <LoadingScreen message={this.state.loading}/>
     const currentPage = this.state.page
     const { user, sessionType } = this.state
     if(currentPage === 'sessionType') 
