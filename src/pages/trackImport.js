@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import '../App.css'
-import appIcon from '../res/images/logo.png'
 import List from './components/list'
+import HostBar from './components/hostbar'
 import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
 import placeholderIcon from '../res/images/spotifyIcon.png'
 import {ReactComponent as LoadingIcon} from '../res/images/loading.svg'
@@ -11,6 +11,7 @@ import ConfirmActionPopup from './components/confirmPopup'
 import Header from './components/header'
 import SpotifySearch from './components/spotifySearch'
 import SpotifySearchResults from './components/spotifySearchResults'
+
 //A SearchResultSection can be used to show track, album and artist results
 
 
@@ -20,14 +21,12 @@ const Divider = props => {
 
 const UserLibraryButton = props => (
     <div className='import-library-button' id={props.selected ? 'active':''} onClick={()=> props.showLibrary(props.id)}>
-        <div>{props.icon}</div>
         <div className='import-library-button-desc'>{props.desc}</div>
     </div>
 )
 const LibrarySidebar = props => (
     <div className='import-library-container'>
         <div className='heading' id='import-head'> Your Library </div>
-        <Divider id='lib-side-divider' customStyle={{backgroundColor:'white', height: '0.05em'}}/>
         <UserLibraryButton id='songs' desc='Songs' selected={'songs'===props.view} showLibrary={() => props.showLibrary('songs')}/>
         <UserLibraryButton id='playlst' desc='Playlist' selected={'playlist'===props.view} showLibrary={() => props.showLibrary('playlist')}/>
         <UserLibraryButton id='albums' desc='Albums' selected={'albums'===props.view}  showLibrary={() => props.showLibrary('albums')}/>
@@ -42,10 +41,6 @@ const ImportContainer = props => (
                 <div className='mobile-icon-container'>
                     <QueueIcon id={props.view === 'queue' ? 'active-icon': ''} className='import-icons'
                     onClick={()=>props.showQueue(true)}/>
-                </div>
-                <div className='mobile-icon-container'>
-                    <StartIcon className='import-icons'
-                    onClick={() => props.startSession('startSession')}/>
                 </div>
             </div> 
 
@@ -237,10 +232,33 @@ class ImportTrack extends Component {
 
         }
     }
-
-    confirmAction = (type) => {
+    updateQueue = async (show) => {
+        return new Promise(async (resolve, reject)=> {
+            const {tracksToAdd, view, currentPlaylist, currentAlbum, userSavedSongs} = this.state
+            if(tracksToAdd.length === 0){
+              if(show)
+                await this.setState({view: 'queue'}) 
+                 //change view if show argument is true
+              resolve(0)
+          }
+  
+          if(view === 'playlistTracks')
+              this.copySelectedTracksToQueue(currentPlaylist.tracks, tracksToAdd)
+          else if(view === 'albumTracks')
+              this.copySelectedTracksToQueue(currentAlbum.tracks, tracksToAdd)
+          else if(view === 'songs')
+              this.copySelectedTracksToQueue(userSavedSongs, tracksToAdd)
+  
+          if(show)
+              await this.setState({view: 'queue'})
+          resolve(0)
+        })
+		
+    }
+    confirmAction = async (type) => {
         if(type === 'startSession')
         {
+            await this.updateQueue(false)
             this.setState({popup: {show: true, 
                 type: type, 
                 title: 'Done Importing?', 
@@ -361,7 +379,7 @@ class ImportTrack extends Component {
 	
 	//create new function for repeated blocks in show Queue
 	//only change view if it is being called by queue button press
-	copySelectedTracksToQueue = (allTracks,selectedTracks) => {
+	copySelectedTracksToQueue = async (allTracks,selectedTracks) => {
 		var queue = []
 		var updatedQueue = this.state.queue.slice()
 		allTracks.forEach((track, indexVal) =>{
@@ -372,33 +390,16 @@ class ImportTrack extends Component {
 				
 		})
 		updatedQueue.push(...queue)
-		this.setState({tracksToAdd: [], queue: updatedQueue})
+		await this.setState({tracksToAdd: [], queue: updatedQueue})
 	}
 
-    updateQueue = (show) => {
-		const {tracksToAdd, view, currentPlaylist, currentAlbum, userSavedSongs} = this.state
-      	if(tracksToAdd.length === 0){
-			show && this.setState({view: 'queue'}) //change view if show argument is true
-			return		
-		}
 
-		
-  
-        if(view === 'playlistTracks')
-            this.copySelectedTracksToQueue(currentPlaylist.tracks, tracksToAdd)
-        else if(view === 'albumTracks')
-			this.copySelectedTracksToQueue(currentAlbum.tracks, tracksToAdd)
-        else if(view === 'songs')
-			this.copySelectedTracksToQueue(userSavedSongs, tracksToAdd)
-
-		show && this.setState({view: 'queue'})
-    }
 
     toggleSidebar = () => {
         this.setState({showSidebar: !this.state.showSidebar})
     }
     render() {
-        const headerInfo = <div id='import-info'>Before we start, let's add some music!</div>
+
 		const {popup, 
 				view, 
 				showSidebar, 
@@ -409,6 +410,7 @@ class ImportTrack extends Component {
 				currentAlbum, 
                 currentPlaylist,
                 search} = this.state
+        const { roomCode } = this.props
 
         var emptyMessage = view === 'queue' ? 
                             'Added songs will show up here' : 'No saved ' + this.state.view
@@ -429,14 +431,13 @@ class ImportTrack extends Component {
             list = currentPlaylist.tracks
 
         return (
-            <div className='session-container' id='import'>
-                <div className='session-header'>
-                    <div className='session-title'>
-                        <div><img className='import-header-logo' src={appIcon}/></div>
-                        <div className='header-title' id='import-header-title'>TrnTable</div>
-                    </div>
-                </div>
-                {headerInfo}
+            <div className='container-w-hostbar' id='track-import'>
+                <HostBar title='Add Tracks' 
+                         roomCode={this.props.roomCode}
+                         icon={<StartIcon id='start-logo'  
+                                onClick={() => this.confirmAction('startSession')}
+                                />}
+                />
                 <ImportContainer
                                 showQueue={this.updateQueue}
                                 showLibrary={this.showLibrary} 
@@ -450,9 +451,9 @@ class ImportTrack extends Component {
                                 updateTracks={this.updateTracks}
                                 displayResults={this.displayResults}
 								startSession={this.confirmAction}
-                                searchRes={search}/>
+                                searchRes={search}
+                />
 				{popup.show && <ConfirmActionPopup popupInfo={popup}/>}
-				{this.props.roomCode && <Header content={'Room Code: ' + this.props.roomCode}/>}
             </div> 
         )
 	}

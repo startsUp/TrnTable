@@ -3,7 +3,7 @@ import '../App.css'
 import djIcon from '../res/images/dj.png'
 import djIconW from '../res/images/djW.png'
 import speakerIconW from '../res/images/speakersW.png'
-import appIcon from '../res/images/logo.png'
+import AppLogo from './components/logo'
 import speakerIcon from '../res/images/speakers.png'
 
 
@@ -214,7 +214,7 @@ class SessionType extends Component {
 		<div className='session-container'>
             <div className='session-header'>
                 <div className='session-title'>
-                    <div><img className='header-logo' src={appIcon}/></div>
+                    <div><AppLogo styleName='session-logo'/></div>
                     <div className='header-title'>TrnTable</div>
                 </div>
             </div>

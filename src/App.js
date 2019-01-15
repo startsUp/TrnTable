@@ -9,31 +9,12 @@ import './App.css'
 import SpotifyWebApi from 'spotify-web-api-js'
 const spotifyApi = new SpotifyWebApi()
 
-
-// const spotifyApi = new SpotifyWebApi()
-
-// const TrackCard = props => (
-//     //
-//     <Container onClick={() => props.addTrack(props.trackInfo.uri)}>
-//         <Card>
-//     <Image src={props.trackInfo.albumArt.url}/>
-//     <Card.Content>
-//       <Card.Header>{props.trackInfo.trackName}</Card.Header>
-//       <Card.Meta>
-//         <span className='date'>{props.trackInfo.albumName}</span>
-//       </Card.Meta>
-//       <Card.Description>{props.trackInfo.artists}</Card.Description>
-//     </Card.Content>
-//   </Card>
-//     </Container>
-           
-// )
-
-const LoadingScreen = () => (
+const LoadingScreen = props => (
 		<div className='loading-container'>
             <div id='logo-container'>
-                <p id='logo-title'>TrnTable</p>
+                <p id='loading-title'>TrnTable</p>
 			    <AppLogo styleName='app-logo' animate={true}/>
+                <p id='loading-message'>{props.message}</p>
             </div>
 		</div>
 )
@@ -61,18 +42,17 @@ class App extends Component {
              sessionType = 'host'
         }
 		this.state = {
-          loggedIn: token ? true : false,
-
-          page:'loading', //original : sType, login
-          roomRef: roomRef, //temp room for testing
-          user: null, 
-          token: token,
-          landingPage: landingPage,
-          firebaseToken: firebaseToken,
-          refreshToken: refreshToken,
-          queue: [], 
-          sessionType: sessionType,
-          loading: 'Creating spotify playlist ...'
+            loggedIn: token ? true : false,
+            page:'loading', //original : sType, login
+            roomRef: roomRef, //temp room for testing
+            user: null, 
+            token: token,
+            landingPage: landingPage,
+            firebaseToken: firebaseToken,
+            refreshToken: refreshToken,
+            queue: [], 
+            sessionType: sessionType,
+            loading: 'Signing In ...'
         }
       
     }
@@ -92,20 +72,61 @@ class App extends Component {
                 this.setState({user: user})
                 // get access token and refresh token
                 console.log('state changed', user)
-                if(this.state.token)
-                    this.setState({page: this.state.landingPage})
+                if(this.state.token){
+                    var res = await this.getUserInfo()
+                    console.log(res)
+                    if(!res){
+                        this.setState({page: this.state.landingPage})
+                    }
+                    else{
+                        this.setState({
+                            page: 'dashboard',
+                            playlistRef: res.playlistRef,
+                            roomRef: res.room,
+                            sessionType: 'host'
+                        })
+                    }
+
+                }
                 else{
                     await this.refreshAccessToken(user)
-                    console.log('got spotify token', spotifyApi.getAccessToken())
-                    this.setState({page: this.state.landingPage})
+                    var res = await this.getUserInfo()
+                    console.log(res)
+                    if(!res){
+                        this.setState({page: this.state.landingPage})
+                    }
+                    else{
+                        this.setState({
+                            page: 'dashboard',
+                            playlistRef: res.playlistRef,
+                            roomRef: res.room,
+                            sessionType: 'host'
+                        })
+                    }
                 }
             }
             else if (!this.state.firebaseToken){
-                this.setState({page: 'login'})
+               this.setState({page: 'login'})
             }
         })
     }
   
+    getUserInfo = async () => {
+        return new Promise((resolve, reject) => {
+            this.props.dbRef.collection('users').doc(this.state.user.uid).get()
+                .then((snapshot) => {
+                    if(snapshot.exists){
+                        resolve(snapshot.data())
+                    }
+                       
+                    else{
+                        resolve(false)
+                    } 
+
+                })
+                .catch(err => reject(err))
+        })
+    }
     refreshAccessToken = async (user=this.state.user) => {
         return new Promise((resolve, reject)=>{
             getSpotifyToken(user.uid)
@@ -158,7 +179,7 @@ class App extends Component {
     changePage = (nextPage, tracks=null, playlistRef=null) => {
         if(nextPage === 'dashboard') {
             if(this.state.page === 'trackImport'){
-                this.setState({page: 'loading'})
+                this.setState({page: 'loading', loading: 'Creating Spotify Playlist ...'})
                 this.createPlaylist(this.getDate() + ' TrnTable Session', tracks)
                     .then(this.setState({page: 'dashboard', sessionType: 'host'}))
 
@@ -208,15 +229,23 @@ class App extends Component {
         return new Promise((resolve, reject) => {
             spotifyApi.createPlaylist(this.state.user.uid, {name: name})
                 .then((playlist) => {
-                    var playlistObj = {href: playlist.href, uri: playlist.uri, id: playlist.id, owner: playlist.owner}
-                    this.setState({playlistRef: playlistObj}) //store playlist object in state
+                    var playlistRef = { href: playlist.href, 
+                        uri: playlist.uri,
+                        id: playlist.id,
+                        owner: playlist.owner
+                    }
+                    var userInfo = {playlistRef: playlistRef,
+                                    host: true,
+                                    room: this.state.roomRef}
 
+                     //store playlist object in state
+                    console.log(this.state)
                     this.props.dbRef
-                                .collection('rooms')
-                                .doc(this.state.roomRef)
-                                .set(playlistObj)
+                                .collection('users')
+                                .doc(this.state.user.uid)
+                                .set(userInfo)
                                 
-                    return playlistObj
+                    return playlistRef
                 })
                 .then((playlistRef) => {
                     //write all tracks added by host, to the database (as a batch)
@@ -232,9 +261,12 @@ class App extends Component {
                     })
                 
                     batch.commit().then(() => {
-                        this.importTracksToPlaylist(this.state.user.id, playlistRef.id, tracks.map(track => track.uri), 0)
-                        .then(resolve())
-                
+                        this.importTracksToPlaylist(this.state.user.uid, playlistRef.id, tracks.map(track => track.uri), 0)
+                        .then(()=>{
+                            this.setState({playlistRef: playlistRef})
+                            resolve()
+                        })
+                        
                     })
                         // this.setState({page: 'dashboard', sessionType: 'host'})
                        

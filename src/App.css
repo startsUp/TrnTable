@@ -29,24 +29,27 @@ animation: App-logo-spin infinite 2s linear;
 }
 
 .loading-logo {
-    height: 7rem;
-animation: App-logo-spin infinite 2s ease-in-out;
-
+    height: 6rem;
+    animation: App-logo-spin infinite 2s ease-in-out;
 }
 #logo-container{
 position: absolute;
-top: 25vh;
+top: 40vh;
 left: 50vw;
 transform: translate(-50%, -50%);
 font-family: 'sofia_problack';
 color: #1ED660;
-font-size: 2em;
 }
-.loading-container{
+#loading-title{
+    font-size: 4em;
+}
+#loading-message{
+    font-size: 2em;
+}
+.loading-container, .container-w-hostbar{
     height: 100vh;
     width: 100vw;
-    background: rgba(0, 0, 0, 0.4);
-
+    background:rgba(0,0,0,0.7);
 }
 
 
@@ -130,6 +133,9 @@ display: none;
 color: #1ED660;
 cursor: pointer;
 }
+
+
+
 
 /*---------------------------------------------------------- 
 ------------------------------------------------------------  
@@ -317,7 +323,10 @@ font-size: 3em;
 padding: 0.2em;
 color: #1ED660;
 }
-
+.session-logo{
+    height: 4em;
+    width: 4em;
+}
 .session-buttons{
     width: 50%;
     border-radius: 2em;
@@ -492,7 +501,7 @@ for mobile, change:
 */
 
 #spotify-results-container{
-padding: 0 1em;
+padding: 0.5em 1em;
 }
 .search-result-title{
 font-family: 'sofia_problack';
@@ -503,10 +512,7 @@ padding: 0.5em;
 .result-container{
 border-radius: 1em;
 margin-bottom: 1em;
--webkit-box-shadow: 0px 0px 33px 3px rgba(0,0,0,0.75);
--moz-box-shadow: 0px 0px 33px 3px rgba(0,0,0,0.75);
-box-shadow: 0px 0px 33px 3px rgba(0,0,0,0.75);
-background: rgba(255, 255, 255, 0.1);
+background: rgba(1,1, 1, 0.6);
 }
 
 #list-showmore-button{
@@ -561,13 +567,17 @@ font-size: 0.7em;
 ------------------------------------------------------------  
 ------------------------------------------------------------  
 */
+#track-import{
+    display: grid;
+    grid-template-rows: 3em auto;
+}
 
 .import-container{
 display: grid;
-margin: 0 auto;
+margin: auto;
 width: 90%;
 max-height: 100%;
-background: rgba(1, 1, 1, 0.8);
+background: rgba(25, 20, 20, 0.7);
 border-radius: 1em;
 grid-template-rows: 4em auto;
 padding: 0.5em;
@@ -585,7 +595,7 @@ margin: auto;
 
 .import-main-container{
 display: grid;
-max-height: 70vh; 
+height: 70vh; 
 }
 
 #import-w-sidebar{
@@ -594,7 +604,9 @@ max-height: 70vh;
 }
 
 #import-head{
-padding: 1em 0 0.5em 0;
+padding: 1em 0.5em 0.5em 0.5em;
+margin-bottom: 0.5em;
+border-bottom: 1px solid white;
 }
 
 #import-header-container{
@@ -624,7 +636,6 @@ padding: 0 0.5em;
 }
 
 
-
 .import-library-container{
 text-align: unset;
 border-radius: 1em;
@@ -634,11 +645,9 @@ font-family: 'sofia_proregular';
 
 .import-library-button{
 cursor: pointer;
-
 color: white;
-
-border-radius: 1em;
-
+margin-bottom: 0.5em;
+border-radius: 0.75em;
 }
 
 .import-library-button-desc{
@@ -656,10 +665,17 @@ color: black;
     fill: white;
     cursor: pointer;
 }
-.import-icons:hover{
+#start-logo{
+    fill: white;
+    height: 2.2em;
+    width:  2.2em;
+    margin: auto 0;
+}
+.import-icons:hover, #start-logo:hover{
     fill: #1ED660;
     cursor: pointer;
 }
+
 
 
 .popup-button, .list-showmore{
@@ -684,7 +700,7 @@ display: none;
 */
 
 .dashboard-container{
-    background-color: rgba(0,0,0,0.9);
+    background-color: rgba(0,0,0,0.7);
     height: 100vh;
     width: 100vw; /*change this on mobile to 100*/ 
     margin: auto;
@@ -693,7 +709,7 @@ display: none;
 .dashboard-header{
     font-family: 'sofia_problack';
     color: #1ED660;
-    padding: 0.5em;
+    padding: 0 0.5em;
     background: rgba(25, 20, 20, 0.7);
     display: grid;
     grid-template-columns: 1fr 4fr 1fr;
@@ -711,6 +727,7 @@ display: none;
 .dashboard-logo{
     height: 2em;
     width: 2em;
+    margin: auto 0;
 }
 .dashboard-title{
     font-family: 'sofia_proregular';
@@ -754,7 +771,7 @@ display: none;
     #import-w-sidebar{
         /*change*/
         grid-template-columns: 1fr;
-        grid-template-rows: 90% 10%;
+        grid-template-rows: 93% 7%;
     }
     
 .import-library-container{
@@ -774,7 +791,17 @@ display: none;
     #import-head{
     display: none;
     }
-        
+    .import-library-button {
+        cursor: pointer;
+        color: white;
+        /* margin-bottom: 0.5em; */
+        border-radius: 0.75em;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        display: grid;
+        margin: 0;
+    }      
 } 
 
 /* Small devices (portrait tablets and large phones, 600px and up) */
@@ -801,9 +828,18 @@ display: none;
     margin: 1em auto; /*changed*/
 }
 
+.import-main-container{
+    display: grid;
+    height: 75vh; 
+}
+    
+
 } 
 
 /* Extra large devices (large laptops and desktops, 1200px and up) */
 @media only screen and (min-width: 1200px) {
-
+    .import-main-container{
+        display: grid;
+        height: 80vh; 
+    }
 }
