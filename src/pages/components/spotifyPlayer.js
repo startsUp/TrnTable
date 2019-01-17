@@ -3,11 +3,18 @@ import '../../App.css'
 import CurrentTrack from './track'
 import PlayerControls from './playerControls'
 import ConfirmActionPopup from './confirmPopup.js'
+import placeholderArt from '../../res/images/placeholderTrackImage.png'
+import ProgressBar from './progressBar'
+import { Direction } from 'react-player-controls'
 class SpotifyPlayer extends Component {
 constructor(props) {
     super(props)
-    console.log('reset')
-    // set the initial state
+
+    console.log(this.props.playlistRef)
+    var artURL = placeholderArt
+    if(this.props.tracks.length > 0){
+        artURL = this.props.tracks[0].albumArt[1].url
+    }
     this.state = {
         token: this.props.accessToken,
         deviceId: "",
@@ -17,10 +24,11 @@ constructor(props) {
                 trackName: "",
                 artistName: "",
                 albumName: "",
-                artURL:"",},
+                artURL:artURL},
         playing: false,
         position: 0,
-        duration: 1,
+        duration: 0,
+        playlistRef: this.props.playlistRef,
         popup: {}
     }
     // this will later be set by setInterval
@@ -30,6 +38,9 @@ constructor(props) {
 // when we click the "go" button
 componentDidMount = () => {
     this.playerCheckInterval = setInterval(() => this.checkForPlayer(), 1000)
+}
+componentWillUnmount = () => {
+    this.player.disconnect()
 }
     
 // updateTrackForGuests = () => {
@@ -46,13 +57,14 @@ componentDidMount = () => {
 // when we receive a new update from the player
 onStateChanged(playerState) {
     // only update if we got a real state
+    console.log(playerState)
     if (playerState !== null) {
     const {
         current_track: currentTrack,
-        position,
-        duration,
     } = playerState.track_window
-    
+ 
+    const {position, duration} = playerState
+    this.setState({position: position})
     if(this.state.error){
         this.setState({error: ""})
     }
@@ -60,11 +72,14 @@ onStateChanged(playerState) {
     const playing = !playerState.paused
 
     if(playing !== this.state.playing)
-        this.setState({playing: playing})
+        this.setState({position: position, playing: playing})
     if(currentTrack.id === this.state.track.id)
         return
 
     this.props.updateCurrentTrack()
+    
+    if (playing)
+        this.handleProgress()
 
     const artURL = currentTrack.album.images[0].url
     const trackName = currentTrack.name
@@ -75,14 +90,13 @@ onStateChanged(playerState) {
     
     const id = currentTrack.id
     this.setState({track:{
-            id: id,
-            position: position,
-            duration: duration,
-            trackName: trackName,
-            albumName: albumName,
-            artistName: artistName,
-            artURL: artURL
-         }})
+                        id: id,
+                        trackName: trackName,
+                        albumName: albumName,
+                        artistName: artistName,
+                        artURL: artURL},
+                    position: position, 
+                    duration: duration})
     } else {
     // state was null, user might have swapped to another device
         this.setState({error: 'Switched Devices',popup: {show: true, 
@@ -90,14 +104,20 @@ onStateChanged(playerState) {
             message: 'Spotify Player Interrupted! Looks like you might have switched to another device.',
             accept: 'Resume Session',
             deny: 'Stop Session',
-            onAccept: this.startSession,
-            onDeny: this.closePopup,
-            close: this.closePopup,
+            onAccept: this.transferPlaybackHere,
+            onDeny: this.props.stopSession,
+            modal: true,
         }})
 
     }
 }
 
+handleProgress = () => {
+    this.progress = window.setInterval(()=>{
+        if(this.state.playing && this.state.error === "")
+            this.setState({position: this.state.position + 1000})
+    }, 1000)
+}
 createEventHandlers() {
     // problem setting up the player
     this.player.on('initialization_error', e => { console.error(e) })
@@ -122,7 +142,6 @@ createEventHandlers() {
     // set the deviceId variable, then let's try
     // to swap music playback to *our* player!
     await this.setState({ deviceId: device_id })
-    this.transferPlaybackHere(false)
     })
 }
 componentDidUpdate = (prevProps, prevState) =>{
@@ -151,29 +170,54 @@ checkForPlayer() {
     }
 }
 
-onPrevClick() {
-    
-    this.player.previousTrack()
+onPrevClick = ()=> {
+    if(this.state.track.trackName === "" || this.state.error){
+        this.startPlaylistPlayback()
+        this.setState({error: ""})
+        
+    }
+    else
+        this.player.previousTrack()
 }
 
 onPlayClick = () => {
-    if(this.state.error)
-        this.transferPlaybackHere(true)
+    if(this.state.track.trackName === "" || this.state.error){
+        this.startPlaylistPlayback()
+        this.setState({error: ""})
+    }
     else
         this.player.togglePlay()
 }
 
-onNextClick() {
-    this.player.nextTrack()
+onNextClick = () => {
+    if(this.state.track.trackName === "" || this.state.error){
+        this.startPlaylistPlayback()
+        this.setState({error: ""})
+  
+    }
+    else
+        this.player.nextTrack()
+}
+seek = (value) => {
+    const { track, error, duration } = this.state
+    if(track.trackName === "" || error){
+        this.startPlaylistPlayback()
+        this.setState({error: ""})
+
+    }
+    else{
+        console.log('seeking to', value, ' with duration:', duration)
+        this.player.seek(value * duration)
+    }
+    
 }
 
-transferPlaybackHere(shouldPlay) {
-    const { deviceId, token } = this.state
-    const { playlistRef } = this.props
+transferPlaybackHere(shouldPlay=true) {
+    const { deviceId } = this.state
     // https://beta.developer.spotify.com/documentation/web-api/reference/player/transfer-a-users-playback/
     this.props.apiRef.transferMyPlayback([deviceId], {play: shouldPlay})
         .catch(err => {
-            console.log(err)
+
             if(err.status === 401){
                 this.props.updateToken()
                     .then(this.transferMyPlayback())
@@ -183,11 +227,12 @@ transferPlaybackHere(shouldPlay) {
 }
 
 startPlaylistPlayback = () => {
-    const { deviceId, token } = this.state
-    this.props.apiRef.play({device_id: deviceId, context_uri: 'spotify:user:shardoodle:playlist:1pXamcAVOGxex3tllc9HDn'})    
+    const { deviceId, token, playlistRef } = this.state
+    this.props.apiRef.play({device_id: deviceId, context_uri: playlistRef.uri})    
     .then()
     .catch((err) => console.log(err))
 }
+
 
 render() {
     const {
@@ -195,20 +240,33 @@ render() {
     error,
     playing,
     track,
-    popup
+    popup,
+    position,
+    duration
     } = this.state
-
+    
+    const value = position / duration
+   
     return (
     <div className='spotify-player-container'>
-        {error && <ConfirmActionPopup popupInfo={popup}/>}
-        <div>      
+        {error && <ConfirmActionPopup 
+                    popupInfo={popup}/>
+        }
+            <img src={track.artURL} className='track-art'/>
             <CurrentTrack track={track}/>
+            <ProgressBar
+                isEnabled
+                direction= {Direction.HORIZONTAL}
+                value={value}
+                updateProgress={this.seek}
+                />
             <PlayerControls 
                 togglePlay={this.onPlayClick} 
+                next={this.onNextClick}
+                prev={this.onPrevClick}
                 playing={playing}
                 votingEnabled={false}
             />
-        </div>
     </div>
     )
 }

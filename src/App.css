@@ -143,6 +143,12 @@ cursor: pointer;
 ------------------------------------------------------------  
 ------------------------------------------------------------  
 */
+
+.spotify-player-container{
+    display: grid;
+    justify-content: center;
+    padding: 2em;
+}
 .player-icon{
 fill: #1ED660;
 height: 4em;
@@ -179,6 +185,16 @@ display: grid;
 grid-template-columns: 1fr 1fr 1fr;
 align-items: center;
 }
+.track-container{
+    font-family: 'sofia_problack';
+    color: white;
+    margin: auto;
+}
+
+.track-art{
+    margin: auto;
+    border-radius: 1em;
+}
 /*---------------------------------------------------------- 
 ------------------------------------------------------------  
                         POPUP 
@@ -205,6 +221,7 @@ left: 50vw;
 transform: translate(-50%, -50%);
 border-radius: 1em;
 text-align: left;
+z-index: 1;
 }
 #ca-popup-title{
 display: grid;
@@ -662,17 +679,20 @@ color: black;
 .import-icons{
     height: 2em;
     width: 2em;
-    fill: white;
+    fill: #1ED660;
     cursor: pointer;
 }
-#start-logo{
-    fill: white;
+#guest-logo{
+    padding-right: 1em;
+}
+#start-logo, .dash-logo{
+    fill: #1ED660;
     height: 2.2em;
     width:  2.2em;
     margin: auto 0;
 }
-.import-icons:hover, #start-logo:hover{
-    fill: #1ED660;
+.import-icons:hover, #start-logo:hover, .dash-logo:hover{
+    fill: white;
     cursor: pointer;
 }
 
@@ -703,7 +723,9 @@ display: none;
     background-color: rgba(0,0,0,0.7);
     height: 100vh;
     width: 100vw; /*change this on mobile to 100*/ 
-    margin: auto;
+    display: grid;
+    grid-template-rows: 3em auto;
+    
 }
 
 .dashboard-header{
@@ -741,14 +763,14 @@ display: none;
     justify-content: flex-end;
 }
 
-#settings-logo{
+/* #settings-logo{
     fill: #1ED660;
     height: 2em;
-}
-#settings-logo:hover{
+} */
+/* #settings-logo:hover{
     cursor: pointer;
     fill: white;
-}
+} */
 
 /*//////////////////////////////////////////////////////////
 ---------------------------------------------------------- 

@@ -52,11 +52,13 @@ class App extends Component {
             refreshToken: refreshToken,
             queue: [], 
             sessionType: sessionType,
-            loading: 'Signing In ...'
+            loading: '',
+            playlistRef: null
         }
       
     }
     componentDidMount = () => {
+        
         const {firebaseToken} = this.state
         if(firebaseToken){
             this.props.firebase
@@ -69,9 +71,10 @@ class App extends Component {
         
         this.props.firebase.auth().onAuthStateChanged(async (user)=>{
             if(user){
-                this.setState({user: user})
+                
+                this.setState({user: user, loading: 'Signing In ...'})
                 // get access token and refresh token
-                console.log('state changed', user)
+                
                 if(this.state.token){
                     var res = await this.getUserInfo()
                     console.log(res)
@@ -79,11 +82,13 @@ class App extends Component {
                         this.setState({page: this.state.landingPage})
                     }
                     else{
+                        var tracks = await this.getSessionTracks(res.room)
                         this.setState({
                             page: 'dashboard',
                             playlistRef: res.playlistRef,
                             roomRef: res.room,
-                            sessionType: 'host'
+                            sessionType: 'host',
+                            queue: tracks
                         })
                     }
 
@@ -96,6 +101,7 @@ class App extends Component {
                         this.setState({page: this.state.landingPage})
                     }
                     else{
+                        var tracks = await this.getSessionTracks(res.room)
                         this.setState({
                             page: 'dashboard',
                             playlistRef: res.playlistRef,
@@ -127,6 +133,21 @@ class App extends Component {
                 .catch(err => reject(err))
         })
     }
+
+    getSessionTracks = async (roomCode) => {
+        return new Promise((resolve, reject) => {
+            this.props.dbRef.collection('tracksInRoom').doc(roomCode).collection('tracks').get()
+                .then((snapshots) => {
+                    console.log(snapshots)
+                    if(snapshots.empty)
+                        resolve(false)
+                    else
+                        resolve(snapshots.docs.map((doc) => doc.data().track))
+                })
+                .catch(err => reject(err))
+        })
+    }
+
     refreshAccessToken = async (user=this.state.user) => {
         return new Promise((resolve, reject)=>{
             getSpotifyToken(user.uid)
@@ -181,7 +202,7 @@ class App extends Component {
             if(this.state.page === 'trackImport'){
                 this.setState({page: 'loading', loading: 'Creating Spotify Playlist ...'})
                 this.createPlaylist(this.getDate() + ' TrnTable Session', tracks)
-                    .then(this.setState({page: 'dashboard', sessionType: 'host'}))
+                    .then(this.setState({page: 'dashboard', sessionType: 'host', queue: tracks}))
 
             }
             else{
@@ -232,7 +253,8 @@ class App extends Component {
                     var playlistRef = { href: playlist.href, 
                         uri: playlist.uri,
                         id: playlist.id,
-                        owner: playlist.owner
+                        owner: playlist.owner,
+                        tracks: tracks.length
                     }
                     var userInfo = {playlistRef: playlistRef,
                                     host: true,
@@ -268,8 +290,7 @@ class App extends Component {
                         })
                         
                     })
-                        // this.setState({page: 'dashboard', sessionType: 'host'})
-                       
+              
                     .catch(err => {
                         console.log(err)
                         reject(err)
@@ -293,13 +314,13 @@ class App extends Component {
 
     var page = <LoadingScreen message={this.state.loading}/>
     const currentPage = this.state.page
-    const { user, sessionType } = this.state
+    const { user, sessionType, queue, playlistRef } = this.state
     if(currentPage === 'sessionType') 
         page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} 
                             user={user} setRoomCode={this.setRoomCode}/>
     else if(currentPage === 'dashboard') 
-        page = <Dashboard user={user} firebase={this.props.firebase}
-                apiRef={spotifyApi} dbRef={this.props.dbRef} 
+        page = <Dashboard user={user} firebase={this.props.firebase} playlistRef={playlistRef} 
+                changePage={this.changePage} apiRef={spotifyApi} dbRef={this.props.dbRef} tracks={queue}
                 roomCode={this.state.roomRef} accessToken={this.state.token} 
                 updateToken={this.refreshAccessToken} type={sessionType}/>
     else if(currentPage === 'trackImport') 

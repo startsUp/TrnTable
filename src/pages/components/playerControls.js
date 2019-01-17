@@ -12,7 +12,7 @@ const PlayerControls = props => (
             </div>
         }  
         <div>
-            <NextIcon className='control-icon' style={{'transform': 'rotate(180deg)'}}/>
+            <NextIcon onClick={props.prev} className='control-icon' style={{'transform': 'rotate(180deg)'}}/>
         </div>
         <div>
             {props.playing ? 
@@ -22,7 +22,7 @@ const PlayerControls = props => (
             }
         </div> 
         <div>
-            <NextIcon className='control-icon' id='next'/>
+            <NextIcon onClick={props.next} className='control-icon' id='next'/>
         </div>   
         {props.votingEnabled &&
             <div>

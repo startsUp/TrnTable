@@ -3,9 +3,11 @@ import '../App.css'
 import appIcon from '../res/images/logo.webp'
 import SpotifyPlayer from './components/spotifyPlayer'
 import GuestPlayer from './components/guestPlayer'
+import HostBar from './components/hostbar'
 import AppLogo from './components/logo'
 import {ReactComponent as SettingsIcon} from '../res/images/dashboard-settings.svg'
-
+import {ReactComponent as CloseIcon} from '../res/images/dashboard-close.svg'
+import {ReactComponent as GuestsIcon} from '../res/images/dashboard-group.svg'
 const Track = props => (
     // url, albumArt.url, albumName, artists
     <div className='track-card-container'>
@@ -42,13 +44,14 @@ class Dashboard extends Component {
     constructor(props){
         super(props)
         this.state = {
-            queue : [{id: '6Z8R6UsFuGXGtiIxiD8ISb',name: 'Safe and Sound', artist: 'Capital Cities', albumArt: 'https://i.scdn.co/image/5b5b97a268f39426c8bf1ada36606e6fcbb317eb'}],
-            playlistRef: null,
+            playlistRef: this.props.playlistRef,
             fetchTimestamp: null, //do (= new Date()) after initial fetch of queue
             unsubscribe: null,
-            tracks: [],
+            tracks: this.props.tracks,
             sessionType: this.props.type,
-            activeDevice: null
+            activeDevice: null,
+            settingsView: false,
+            guests: [{id: 's'}]
         }
     }
 
@@ -85,6 +88,11 @@ class Dashboard extends Component {
         
     }
 
+    stopSession = () => {
+        //delete session info from database
+        this.props.dbRef.collection('users').doc(this.props.user.uid).delete()
+        this.props.changePage('sessionType')
+    }
     getTracks = () => {
         return this.props.dbRef.collection('tracksInRoom').doc(this.props.roomCode).collection('tracks').get()
     }
@@ -94,36 +102,37 @@ class Dashboard extends Component {
     render() {
         
         const host = (this.state.sessionType === 'host')
-        const { activeDevice } = this.state
+        const { activeDevice, settingsView, guests } = this.state
         const { roomCode, 
                 user, 
                 apiRef, 
                 updateToken, 
-                accessToken } = this.props 
-
+                accessToken } = this.props
+        
+        const hostBarIcon = settingsView ? <CloseIcon className='dash-logo'/> : 
+                                           <SettingsIcon className='dash-logo'/>
+        const guestsIcon = <div className='dashboard-roominfo' id='guest-logo'>
+                            <div id='host-roomcode'>{guests.length}</div>
+                            <GuestsIcon className='dash-logo'/>
+                           </div>
         return (
-            <div className='dashboard-container'>
-                <div className='dashboard-header'>
-                    <div className='dashboard-roominfo'>
-                        <AppLogo styleName='dashboard-logo' text={roomCode}/>
-                        {host && <div id='host-roomcode'>{roomCode}</div>}
-                    </div>
-                    <div className='dashboard-title'>
-                        { host ? user.displayName + '\'s Session' :
-                            'TrnTable Session' }
-                    </div>
-                    <div className='dashboard-settings-container'>
-                        <SettingsIcon id='settings-logo'/>
-                    </div>
-                </div>
+            <div className={host ? 'dashboard-container' : 'dashboard-guest-container'}>
+                <HostBar roomCode={roomCode} 
+                            title={ host ? ` ${user.displayName}'s Session` :
+                                'TrnTable Session'}
+                            settingsIcon={hostBarIcon}
+                            guestsIcon={guestsIcon}
+                            onClick={() => this.setState({settingsView: !this.state.settingsView})}
+                />
                 {host ?
-                    <SpotifyPlayer apiRef={apiRef} user={user} 
-                        accessToken={accessToken} updateToken={updateToken}
+                    <SpotifyPlayer apiRef={apiRef} user={user} tracks={this.props.tracks} stopSession={this.stopSession}
+                        accessToken={accessToken} updateToken={updateToken} playlistRef={this.props.playlistRef}
                         updateCurrentTrack={this.updateCurrentTrack}/>
                     :
                     <GuestPlayer apiRef={apiRef} user={user} 
                         accessToken={accessToken} updateToken={updateToken}/>
                 }
+                
             </div> 
         )
 	}

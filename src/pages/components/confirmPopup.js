@@ -15,10 +15,12 @@ const ConfirmActionPopup = props => (
                     {props.popupInfo.title} 
                 </div>
                 <Divider customStyle={{width:'90%', margin:'0'}}/>
-                <CloseIcon style={{transform: 'rotate(45deg)'}} 
-                           onClick={props.popupInfo.close} 
-                           className='popup-close-icon' 
-                           id='ca-popup-close-icon'/> 
+                {!props.popupInfo.modal &&
+                    <CloseIcon style={{transform: 'rotate(45deg)'}} 
+                            onClick={props.popupInfo.close} 
+                            className='popup-close-icon' 
+                            id='ca-popup-close-icon'/> 
+                }
             </div>
             <div className='ca-popup-message'>
                 {props.popupInfo.message}
