@@ -49,7 +49,7 @@ color: #1ED660;
 .loading-container, .container-w-hostbar{
     height: 100vh;
     width: 100vw;
-    background:rgba(0,0,0,0.7);
+    background:rgba(0,0,0,0.8);
 }
 
 
@@ -111,15 +111,16 @@ grid-template-columns: 8fr 2fr;
 font-family: 'sofia_proregular';
 background: white;
 border-radius: 3em;
-max-width: 20em;
-margin: 0 0.5em 0 0.5em;
+margin: auto 0;
+max-width: 300px;
 }
 
 #spotify-search-input{
 outline: none;
 border:none;
-padding: 0 1em;
+padding: 0.3em 1em;
 border-radius: 2em;
+font-size: 1rem;
 
 }  
 
@@ -127,7 +128,9 @@ border-radius: 2em;
 margin: auto 0;
 padding: 0 1em;
 border-left: solid #1ED660 1px;
-display: none;
+font-size: 1rem;
+color: black;
+
 }
 .search-button:hover{
 color: #1ED660;
@@ -232,6 +235,7 @@ position: absolute;
 margin: 0.5rem;
 right: 0;
 cursor: pointer;
+fill: #1ED660;
 }
 #ca-popup-action{
 display: grid;
@@ -520,13 +524,18 @@ for mobile, change:
 #spotify-results-container{
 padding: 0.5em 1em;
 }
+.dashboard-search{
+    font-size: 1rem;
+    height: 72vh;
+    overflow: auto;
+}
 .search-result-title{
 font-family: 'sofia_problack';
 font-size: 2em;
 color: #1ED660;
 padding: 0.5em;
 }
-.result-container{
+.result-container, #list-dark{
 border-radius: 1em;
 margin-bottom: 1em;
 background: rgba(1,1, 1, 0.6);
@@ -552,14 +561,13 @@ margin: 1em auto;
 .list-item{
     display: grid;
     grid-template-columns: 1fr 5fr 1fr;
-    padding: 0.5em;
+    padding: 0.5em 0.5em 0.5em 1em;
     color: white;
     font-family: 'sofia_proregular';
 }
 .list-content-container{
     text-align: left;
-    margin: auto 0;
-    padding: 0.5em;
+    margin: auto 1em;
     cursor: pointer;
 }
 .list-content{
@@ -576,7 +584,9 @@ font-size: 0.7em;
     height: 3rem;
     width: 3rem;
 }
-
+.list-image{
+    margin: auto;
+}
 
 /*---------------------------------------------------------- 
 ------------------------------------------------------------  
@@ -685,13 +695,13 @@ color: black;
 #guest-logo{
     padding-right: 1em;
 }
-#start-logo, .dash-logo{
+#start-logo, .dash-logo, .home-icon{
     fill: #1ED660;
     height: 2.2em;
     width:  2.2em;
     margin: auto 0;
 }
-.import-icons:hover, #start-logo:hover, .dash-logo:hover{
+.import-icons:hover, #start-logo:hover, .dash-logo:hover, .home-icon:hover{
     fill: white;
     cursor: pointer;
 }
@@ -719,6 +729,7 @@ display: none;
 ------------------------------------------------------------  
 */
 
+
 .dashboard-container{
     background-color: rgba(0,0,0,0.7);
     height: 100vh;
@@ -741,6 +752,43 @@ display: none;
     display: inline-flex;
 }
 
+.sidebar-container{
+    height: 100vh;
+    position: absolute;
+    padding-top: 3em;
+    box-sizing: border-box;
+    z-index: 1;
+}
+#sidebar-home-icon{
+    right: 0;
+    margin: 0.5rem;
+    position: absolute;
+}
+.sidebar-context-title{
+    font-size: 1.5em;
+    margin-bottom: 0.5em;
+    text-decoration: underline;
+    color: #1ED660;
+}
+.dashboard-view-container{ /*change*/
+    display: grid;
+}
+#dashboard-menu-icon{
+    position: absolute;
+    margin: 0.5rem;
+    left: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+#dashboard-w-sidebar{
+    grid-template-columns: 15em auto;
+}
+
+#dashboard-w-queue, #dashboard-w-search{
+    grid-template-columns: 25em auto;
+}
+
 #host-roomcode{
     margin: auto 0.5rem; 
     font-size: 1.5em;
@@ -761,6 +809,31 @@ display: none;
 .dashboard-settings-container{
     display: inline-flex;
     justify-content: flex-end;
+}
+
+.dashboard-sidebar{
+    background: rgba(25, 20, 20, 0.8);
+    padding-bottom: 1em;
+    font-family: 'sofia_problack';
+    color: white;
+    display: grid;
+    height: 100%;
+    box-sizing: border-box;
+}
+.options-container{
+    margin-top: 2.5rem;
+    padding: 1em;
+    font-size: 1.3em;
+}
+.options{
+    padding: 0.5em;
+    border-bottom: 1px solid #1ED660;
+    cursor: pointer;
+}
+.options:hover{
+    color: #1ED660;
+    /* text-decoration: underline; */
+
 }
 
 /* #settings-logo{

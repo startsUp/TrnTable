@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import '../../App.css'
 
 const SearchInput = props => (
-    <div className='search-container'>
-        <input className='search-input' onKeyPress={(e)=>(e.key==='Enter' && props.submit())} id={props.inputID} placeholder='Search... '/>
+    <div className='search-container' style={props.center && {margin: 'auto'}}>
+        <input className='search-input' autocomplete='off' onKeyPress={(e)=>(e.key==='Enter' && props.submit())} id={props.inputID} placeholder='Search... '/>
         <div className='search-button' onClick={props.submit}>Search</div>
     </div>
 )
@@ -32,8 +32,9 @@ class SpotifySearch extends Component {
     }
 
     render(){
+        
         return(
-            <SearchInput submit={this.onSearch} inputID='spotify-search-input'/>
+            <SearchInput submit={this.onSearch} inputID='spotify-search-input' {...this.props}/>
         )
     }
 }

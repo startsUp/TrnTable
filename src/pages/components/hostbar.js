@@ -11,7 +11,7 @@ const HostBar = props => (
         </div>
         <div className='dashboard-settings-container'>
             {props.guestsIcon}
-            {props.settingsIcon}
+            {props.icon}
         </div>
     </div>
 )

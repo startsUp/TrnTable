@@ -83,12 +83,12 @@ class App extends Component {
                     }
                     else{
                         var tracks = await this.getSessionTracks(res.room)
+                        console.log(tracks)
                         this.setState({
                             page: 'dashboard',
                             playlistRef: res.playlistRef,
                             roomRef: res.room,
-                            sessionType: 'host',
-                            queue: tracks
+                            sessionType: 'host'
                         })
                     }
 
@@ -106,7 +106,8 @@ class App extends Component {
                             page: 'dashboard',
                             playlistRef: res.playlistRef,
                             roomRef: res.room,
-                            sessionType: 'host'
+                            sessionType: 'host',
+                            queue: tracks
                         })
                     }
                 }
@@ -203,7 +204,6 @@ class App extends Component {
                 this.setState({page: 'loading', loading: 'Creating Spotify Playlist ...'})
                 this.createPlaylist(this.getDate() + ' TrnTable Session', tracks)
                     .then(this.setState({page: 'dashboard', sessionType: 'host', queue: tracks}))
-
             }
             else{
                 this.setState({page: 'dashboard', sessionType: 'guest'})
@@ -228,19 +228,6 @@ class App extends Component {
         return day + ' ' + monthNames[monthIndex] + ' ' + year
       }
       
-    searchForTrack = (track, options, callback) => {
-       spotifyApi.searchTracks(track, options, callback)
-    }
-
-    getUserPlaylists = (user, options, callback) => {
-        spotifyApi.getUserPlaylists(user.id, options, callback)
-        // spotifyApi.transferMyPlayback()
-    }
-
-    getPlaylistTracks = (user, playlistID, options, callback) => {
-        // spotifyApi.getPlaylistTracks(user.id, playlistID, options, callback)
-        // spotifyApi.getAlbumTracks(albumID, options)
-    }
 
     setRoomCode = (roomCode) => {
         this.setState({roomRef: roomCode})
@@ -261,7 +248,7 @@ class App extends Component {
                                     room: this.state.roomRef}
 
                      //store playlist object in state
-                    console.log(this.state)
+           
                     this.props.dbRef
                                 .collection('users')
                                 .doc(this.state.user.uid)
@@ -279,7 +266,7 @@ class App extends Component {
                         var trackRef = this.props.dbRef.collection('tracksInRoom')
                                                        .doc(this.state.roomRef)
                                                        .collection('tracks').doc()
-                        batch.set(trackRef, {track: track})
+                        batch.set(trackRef, {track: track, timeAdded: new Date()})
                     })
                 
                     batch.commit().then(() => {

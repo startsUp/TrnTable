@@ -3,7 +3,7 @@ import '../App.css'
 import List from './components/list'
 import HostBar from './components/hostbar'
 import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
-import placeholderIcon from '../res/images/spotifyIcon.png'
+
 import {ReactComponent as LoadingIcon} from '../res/images/loading.svg'
 import {ReactComponent as QueueIcon} from '../res/images/twotone-playlist_add-24px.svg'
 import {ReactComponent as StartIcon} from '../res/images/import-done.svg'
@@ -11,6 +11,7 @@ import ConfirmActionPopup from './components/confirmPopup'
 import Header from './components/header'
 import SpotifySearch from './components/spotifySearch'
 import SpotifySearchResults from './components/spotifySearchResults'
+import { parseData } from '../functions'
 
 //A SearchResultSection can be used to show track, album and artist results
 
@@ -96,7 +97,7 @@ class ImportTrack extends Component {
     getSavedTracks = () => {
         this.props.apiRef.getMySavedTracks({limit:50})
         .then(data => {
-            this.setState({userSavedSongs: this.parseData('songs', data), 
+            this.setState({userSavedSongs: parseData('songs', data), 
                             savedSongsOffset:50, totalSavedSongs: data.total})
         })
         .catch(err => {
@@ -106,91 +107,7 @@ class ImportTrack extends Component {
             }
         }) 
     }
-    parseData = (dataType, data, albumRef=null) => {
-        if(dataType === 'songs' || dataType === 'albumSongs')
-        {
-        
-            var tracks = []
-            data.items.forEach(item => { 
-                var track = item.track ? item.track : item
-                
-                var icon = null
-                var albumArt = null
-                var name = null
-                if(dataType === 'albumSongs'){
-                    track = item
-                    icon = albumRef.iconURL
-                    albumArt = albumRef.albumArt
-                    name = albumRef.name
-                }else{
-                    icon = track.album.images[2].url
-                    albumArt = track.album.images
-                    name = track.album.name
-                }
-                    
-
-                var artists = track.artists.map(elem => {return elem.name}).join(", ")
-                tracks.push({trackName: track.name,
-                             content: track.name,
-                             subContent: artists,
-                             artists: artists,
-                             iconURL: icon,
-                             albumArt: albumArt,
-                             albumName: name, 
-                             id: track.id, 
-                             uri: track.uri})
-            })
-            return tracks
-        }
-        else if (dataType === 'playlist')
-        {
-            var playlists = []
-           
-            data.items.forEach(item => { 
-                playlists.push({name: item.name,
-                             content: item.name,
-                             iconURL: item.images.length > 0 ? item.images[0].url : placeholderIcon, 
-                             id: item.id, 
-                             uri: item.uri,
-                             ownerID: item.owner.id})
-            })
-            return playlists
-        }
-        else if (dataType === 'albums')
-        {
-            var albums = []
-            data.items.forEach(item => { 
-                var album = item.album ? item.album : item
-                var artists = album.artists.map(elem => {return elem.name}).join(", ")
-                albums.push({name: album.name,
-                             artists: artists,
-                             content: album.name,
-                             subContent: artists,
-                             iconURL: album.images[2].url,
-                             albumArt: album.images,
-                             id: album.id,
-                             totalTracks: album.total_tracks, 
-                             uri: album.uri})
-            })
     
-            return albums
-        } 
-        else if (dataType === 'artists')
-        {
-            var artists = []
-            data.items.forEach(item => {
-                var icon = item.images[2] ?  item.images[2].url : placeholderIcon
-                artists.push({
-                                name: item.name,
-                                content: item.name,
-                                iconURL: icon,
-                                id: item.id,
-                                uri: item.uri
-                            })
-            })
-            return artists
-        }      
-    }
     updateTracks = (tracks) => {
         this.setState({tracksToAdd: tracks})
     }
@@ -202,7 +119,7 @@ class ImportTrack extends Component {
                 this.props.apiRef.getAlbumTracks(item.id, {limit:50})
                     .then((data) => {
                         
-                        this.setState({currentAlbum: {id: item.id, tracks: this.parseData('albumSongs', data, item)}, 
+                        this.setState({currentAlbum: {id: item.id, tracks: parseData('albumSongs', data, item)}, 
                                         view:'albumTracks',})
                     })
                     .catch(err => {
@@ -218,7 +135,7 @@ class ImportTrack extends Component {
             if(this.state.currentPlaylist.id !== item.id){
                 this.props.apiRef.getPlaylistTracks(item.ownerID, item.id, {limit:50})
                     .then((data) => {
-                        this.setState({currentPlaylist: {id: item.id, tracks: this.parseData('songs', data)}, 
+                        this.setState({currentPlaylist: {id: item.id, tracks: parseData('songs', data)}, 
                                         view:'playlistTracks'})
                     })
                     .catch(err => {
@@ -277,10 +194,10 @@ class ImportTrack extends Component {
 
     displayResults = (data) => {
 
-        const tracks = this.parseData('songs', data.tracks)
-        const playlists = this.parseData('playlist', data.playlists)
-        const albums = this.parseData('albums', data.albums)
-        const artists = this.parseData('artists', data.artists)
+        const tracks = parseData('songs', data.tracks)
+        const playlists = parseData('playlist', data.playlists)
+        const albums = parseData('albums', data.albums)
+        const artists = parseData('artists', data.artists)
 
         this.setState({search: {tracks: tracks, 
                                 playlists: playlists, 
@@ -309,7 +226,7 @@ class ImportTrack extends Component {
                 this.setState({view: 'loading'})
                 this.props.apiRef.getMySavedTracks({offset: this.state.savedSongsOffset, limit:50})
                 .then(data =>{
-                    this.setState({userSavedSongs: this.parseData(type, data), 
+                    this.setState({userSavedSongs: parseData(type, data), 
                         savedSongsOffset: this.savedSongsOffset+50, view:'songs', totalSavedSongs: data.total})
                     
                 })
@@ -332,7 +249,7 @@ class ImportTrack extends Component {
                 this.props.apiRef.getUserPlaylists({offset: this.state.playlistOffset, limit:50})
                                 .then(data =>{
                                     
-                                    this.setState({userPlaylists: this.parseData(type, data), 
+                                    this.setState({userPlaylists: parseData(type, data), 
                                         playlistOffset: this.playlistOffset+50,view:'playlist',
                                         totalSavedPlaylist:data.total}
                                     )
@@ -353,7 +270,7 @@ class ImportTrack extends Component {
                 this.setState({view:'loading'})
                 this.props.apiRef.getMySavedAlbums({offset: this.state.albumOffset, limit:50})
                                 .then(data =>{
-                                    this.setState({userAlbums: this.parseData(type, data), view:'albums',
+                                    this.setState({userAlbums: parseData(type, data), view:'albums',
                                         albumOffset: this.albumOffset+50, totalSavedAlbums: data.total}
                                     )
                                 })

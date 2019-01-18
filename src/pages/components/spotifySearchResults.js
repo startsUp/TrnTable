@@ -8,7 +8,7 @@ class SpotifySearchResults extends Component {
         var emptyMessage = 'No results'
         const { tracks, albums, playlists, artists } = this.props.data
         return(
-            <div className='search-results-container' id='spotify-results-container'>
+            <div className={this.props.small ? 'dashboard-search': 'search-results-container'} id='spotify-results-container'>
                 <div className='result-container'>
                     <div className='search-result-title'>Songs</div>
                     <List id='search-result-songs' emptyMessage={emptyMessage} 

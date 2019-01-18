@@ -89,7 +89,7 @@ class List extends Component {
        
        
         return (
-            <div className='list-container'>
+            <div className='list-container' id={this.props.dark ? 'list-dark': 'list-no-bg'}>
                 {list === null ? emptyMessage : list}
                 {itemsToShow !== -1 && <div className='list-showmore' id='list-showmore-button'
                                 onClick={this.handleShowMore}>Show More</div>}
