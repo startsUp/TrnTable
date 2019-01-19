@@ -3,7 +3,7 @@ import '../../App.css'
 
 const SearchInput = props => (
     <div className='search-container' style={props.center && {margin: 'auto'}}>
-        <input className='search-input' autocomplete='off' onKeyPress={(e)=>(e.key==='Enter' && props.submit())} id={props.inputID} placeholder='Search... '/>
+        <input className='search-input' autoComplete='off' onKeyPress={(e)=>(e.key==='Enter' && props.submit())} id={props.inputID} placeholder='Search... '/>
         <div className='search-button' onClick={props.submit}>Search</div>
     </div>
 )

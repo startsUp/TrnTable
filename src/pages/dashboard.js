@@ -4,30 +4,31 @@ import appIcon from '../res/images/logo.webp'
 import SpotifyPlayer from './components/spotifyPlayer'
 import GuestPlayer from './components/guestPlayer'
 import HostBar from './components/hostbar'
+import Settings from './components/settings'
 import AppLogo from './components/logo'
 import DashboardSidebar from './components/siderbar'
 import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
 import {ReactComponent as SettingsIcon} from '../res/images/dashboard-settings.svg'
 import {ReactComponent as CloseIcon} from '../res/images/dashboard-close.svg'
 import {ReactComponent as GuestsIcon} from '../res/images/dashboard-group.svg'
-import { parseData } from '../functions'
-const Track = props => (
-    // url, albumArt.url, albumName, artists
-    <div className='track-card-container'>
-        <div className='track-art'>
-            <img src={props.albumArtURL}/>
-        </div>
-        <div className='track-info'>
-            <div id='track-name' className='track-info-text'>{props.name}</div>
-            <div id='track-artists' className='track-info-text'>{props.artist}</div>
-        </div>
-        {props.added ? 
-            <div onClick={props.remove}> <div>➖</div> </div> : 
-            <div onClick={props.add}> <div>➕</div> </div>
-        }
-    </div>
+import { parseData, hostListeners, guestListeners, getGuests, getRequests } from '../functions'
+// const Track = props => (
+//     // url, albumArt.url, albumName, artists
+//     <div className='track-card-container'>
+//         <div className='track-art'>
+//             <img src={props.albumArtURL}/>
+//         </div>
+//         <div className='track-info'>
+//             <div id='track-name' className='track-info-text'>{props.name}</div>
+//             <div id='track-artists' className='track-info-text'>{props.artist}</div>
+//         </div>
+//         {props.added ? 
+//             <div onClick={props.remove}> <div>➖</div> </div> : 
+//             <div onClick={props.add}> <div>➕</div> </div>
+//         }
+//     </div>
      
-)
+// )
 
 
 const TrackQueue = props => {
@@ -46,48 +47,65 @@ const DashboardHeader = props => {
 class Dashboard extends Component {
     constructor(props){
         super(props)
-        console.log(this.props.tracks)
+
+        if(this.props.type === 'host')
+            this.spotifyPlayer = React.createRef()
         this.state = {
             playlistRef: this.props.playlistRef,
             fetchTimestamp: null, //do (= new Date()) after initial fetch of queue
-            unsubscribe: null,
+            listeners: [],
             tracks: this.props.tracks,
-            sessionType: this.props.type,
             activeDevice: null,
             settingsView: false,
             sidebar: {show: false, view: 'Home'},
             view: 'normal',
-            guests: [{id: 's'}]
+            guests: [],
+            requests: []
         }
     }
-
-    
+ 
 
     componentDidMount = () => {
 
-        //if sessiontype is host then subscribe to
-        // console.log(this.props.firebase.auth().currentUser)
-        // var getFirstFetch = this.getTracks()
-        // var unsubscribe = this.props.dbRef.collection('tracksInRoom').doc(this.props.roomCode).collection('tracks').orderBy('addedTimestamp').startAt(this.state.fetchTimestamp)
-        //         .onSnapshot((snapshot) => {
-        //             console.log(snapshot.docs)
+        
+        const {type, dbRef, roomCode} = this.props
+        this.initialzie(type, dbRef, roomCode)  //fetch necessary data
 
-        //                 snapshot.docChanges().forEach((change) => {
-        //                     if (change.type === "added") {
-        //                         var doc = change.doc
-        //                         let source = doc.metadata.hasPendingWrites ? 'Local' : 'Server'
-        //                         if (source === 'Server') {
-        //                             this.setState({ //update local queue
-        //                                 tracks: [] 
-        //                             })
-        //                         } else {
-        //                         // Do nothing, it's a local update so ignore it
-        //                         }
-                                
-        //                     }   
-        //                 })
-        //             })
-        // this.setState({unsubscribe: unsubscribe})
+        //setup listeners
+        var listeners = []
+        if(type === 'host'){
+            listeners = hostListeners(dbRef, roomCode, new Date(), this.handleNewData)
+        }
+        else {
+            listeners = guestListeners(dbRef, roomCode, new Date(), this.handleNewData)
+        }
+        this.setState({listeners: listeners})
+        
+    
+    }
+
+    initialzie = async (type, dbRef, roomCode) => {
+        console.log(type)
+        if(type ==='host'){
+            var guests = await getGuests(dbRef, roomCode)
+            var requests = await getRequests(dbRef, roomCode)
+            console.log(guests, requests)
+        }
+    }
+    componentWillUnmount = () => {
+        // unsubscribe
+        this.state.listeners.forEach(listener => {
+            listener.unsubscribe()
+        })
+    }
+    handleNewData = (type, data) => { 
+        const {guests, requests} = this.state
+        console.log(data)
+        if(type === 'guest')
+            this.setState({guests: [...guests, data]})
+        else if(type === 'request')
+            this.setState({requests: [...requests, data]})
+     
     }
 
     updateCurrentTrack = () => {
@@ -95,16 +113,11 @@ class Dashboard extends Component {
     }
 
     show = (option) => {
-        if(option === 'Queue')
-            this.setState({sidebar: {show: this.state.sidebar.show, view: option}})
-        else if (option === 'Home')
-            this.setState({sidebar: {show: this.state.sidebar.show, view: option}})
-        else if (option === 'Add Tracks')
-            this.setState({sidebar: {show: this.state.sidebar.show, view: option}})
+        const {sidebar}=this.state
+        this.setState({sidebar: {...sidebar, view: option}})
     }
 
     displayResults = (data) => {
-        console.log(data)
         const tracks = parseData('songs', data.tracks)
         const playlists = parseData('playlist', data.playlists)
         const albums = parseData('albums', data.albums)
@@ -118,6 +131,12 @@ class Dashboard extends Component {
 
 
     }
+    playSong = (uri) => {
+        this.spotifyPlayer.current.startPlaylistPlayback({uri: uri})
+    }
+    toggleSettings = () => {
+        this.setState({settingsView: !this.state.settingsView})
+    }
     stopSession = () => {
         //delete session info from database
         this.props.dbRef.collection('users').doc(this.props.user.uid).delete()
@@ -126,31 +145,30 @@ class Dashboard extends Component {
     getTracks = () => {
         return this.props.dbRef.collection('tracksInRoom').doc(this.props.roomCode).collection('tracks').get()
     }
-    componentWillUnmount = () => {
-        // this.state.unsubscribe()
-    }
+
     toggleSidebar = () => {
         const { show, view } = this.state.sidebar
         this.setState({sidebar: {show: !show, view: view}})
     }
     render() {
         
-        const host = (this.state.sessionType === 'host')
+        const host = (this.props.type === 'host')
         const { activeDevice, 
                 settingsView, 
                 guests, 
                 view, 
                 tracks, 
                 sidebar,
-                search } = this.state
+                search,
+                requests } = this.state
         const { roomCode, 
                 user, 
                 apiRef, 
                 updateToken, 
                 accessToken } = this.props
         
-        const hostBarIcon = settingsView ? <CloseIcon className='dash-logo'/> : 
-                                           <SettingsIcon className='dash-logo'/>
+        const hostBarIcon = settingsView ? <CloseIcon className='dash-logo' onClick={this.toggleSettings}/> : 
+                                           <SettingsIcon className='dash-logo' onClick={this.toggleSettings}/>
         const guestsIcon = <div className='dashboard-roominfo' id='guest-logo'>
                                 <div id='host-roomcode'>{guests.length}</div>
                                 <GuestsIcon className='dash-logo'/>
@@ -169,14 +187,19 @@ class Dashboard extends Component {
                             guestsIcon={guestsIcon}
                             onClick={() => this.setState({settingsView: !this.state.settingsView})}
                 />
+                {settingsView && <Settings endSession={this.stopSession} 
+                                           close={this.toggleSettings}
+                                 />
+                }
                 <div className='sidebar-container'>
                 {sidebar.show && <DashboardSidebar 
-                                        list={tracks} 
+                                        list={sidebar.view === 'Queue' ? tracks : requests} 
                                         view={sidebar.view} 
                                         options={options} 
                                         onSearchResults={this.displayResults}
                                         searchRes={sidebar.view === 'Add Tracks' && search}
                                         show={this.show}
+                                        onPlay={this.playSong}
                                         apiRef={apiRef}/>
                 }
                 </div>
@@ -185,7 +208,7 @@ class Dashboard extends Component {
                     <MenuIcon className='dash-logo' id='dashboard-menu-icon' onClick={this.toggleSidebar}/>
                     
                     {host ?
-                        <SpotifyPlayer apiRef={apiRef} user={user} tracks={this.props.tracks} stopSession={this.stopSession}
+                        <SpotifyPlayer ref={this.spotifyPlayer} apiRef={apiRef} user={user} tracks={this.props.tracks} stopSession={this.stopSession}
                             accessToken={accessToken} updateToken={updateToken} playlistRef={this.props.playlistRef}
                             updateCurrentTrack={this.updateCurrentTrack}/>
                         :

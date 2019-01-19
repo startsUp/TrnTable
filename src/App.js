@@ -83,7 +83,7 @@ class App extends Component {
                     }
                     else{
                         var tracks = await this.getSessionTracks(res.room)
-                        console.log(tracks)
+
                         this.setState({
                             page: 'dashboard',
                             playlistRef: res.playlistRef,
@@ -137,7 +137,7 @@ class App extends Component {
 
     getSessionTracks = async (roomCode) => {
         return new Promise((resolve, reject) => {
-            this.props.dbRef.collection('tracksInRoom').doc(roomCode).collection('tracks').get()
+            this.props.dbRef.collection('tracksInRoom').doc(roomCode).collection('tracks').orderBy('timeAdded').get()
                 .then((snapshots) => {
                     console.log(snapshots)
                     if(snapshots.empty)
@@ -153,6 +153,7 @@ class App extends Component {
         return new Promise((resolve, reject)=>{
             getSpotifyToken(user.uid)
             .then((res)=>{
+        
                 const token = res.access_token
                 spotifyApi.setAccessToken(token)
                 this.setState({token: token})
@@ -171,17 +172,20 @@ class App extends Component {
     //call with offset 0 and pass in all the tracks to add to the playlist
     importTracksToPlaylist = (userID, playlistID, tracks, offset) => {
         return new Promise((resolve, reject) => {
+
             if(offset >= tracks.length)
                 resolve()
-
-            var trackBatch = tracks.slice(offset, offset+100) // gets 100 tracks
-            spotifyApi.addTracksToPlaylist(userID, playlistID, trackBatch)
-                .then(() => {
-                    this.importTracksToPlaylist(userID, playlistID, tracks, offset + 100)
-                        .then(() => resolve())
-                        .catch(err => reject(err)) //propogate err up
-                }) //add next batch
-                .catch(err => reject(err))
+            else{
+                var trackBatch = tracks.slice(offset, offset+100) // gets 100 tracks
+                spotifyApi.addTracksToPlaylist(userID, playlistID, trackBatch)
+                    .then(() => {
+                        this.importTracksToPlaylist(userID, playlistID, tracks, offset + 100)
+                            .then(() => resolve())
+                            .catch(err => reject(err)) //propogate err up
+                    }) //add next batch
+                    .catch(err => reject(err))
+            }
+            
         })
     }
     
@@ -204,6 +208,7 @@ class App extends Component {
                 this.setState({page: 'loading', loading: 'Creating Spotify Playlist ...'})
                 this.createPlaylist(this.getDate() + ' TrnTable Session', tracks)
                     .then(this.setState({page: 'dashboard', sessionType: 'host', queue: tracks}))
+                    .catch(err=> console.trace(err))
             }
             else{
                 this.setState({page: 'dashboard', sessionType: 'guest'})
@@ -235,6 +240,9 @@ class App extends Component {
 
     createPlaylist = (name, tracks) => {
         return new Promise((resolve, reject) => {
+            console.log('%c Creating Playlist', 'color: orange;font-weight: bold')
+            console.log({name, tracks})
+
             spotifyApi.createPlaylist(this.state.user.uid, {name: name})
                 .then((playlist) => {
                     var playlistRef = { href: playlist.href, 
@@ -258,7 +266,9 @@ class App extends Component {
                 })
                 .then((playlistRef) => {
                     //write all tracks added by host, to the database (as a batch)
-                 
+                    console.log('%c Playlist Created', 'color: orange;font-weight: bold')
+                     console.table(playlistRef)
+
                     var batch = this.props.dbRef.batch()
                     
                     tracks.forEach((track) => { 
@@ -270,12 +280,16 @@ class App extends Component {
                     })
                 
                     batch.commit().then(() => {
+                        console.log('%c Batch completed', 'color: orange;font-weight: bold')
+                        console.table(playlistRef)
                         this.importTracksToPlaylist(this.state.user.uid, playlistRef.id, tracks.map(track => track.uri), 0)
                         .then(()=>{
+                            console.log('%c Imported Tracks', 'color: orange;font-weight: bold')
+                            console.table(playlistRef)
                             this.setState({playlistRef: playlistRef})
                             resolve()
                         })
-                        
+                        .catch((err) => reject(err))
                     })
               
                     .catch(err => {

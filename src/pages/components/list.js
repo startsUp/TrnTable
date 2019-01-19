@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import '../../App.css'
 import {ReactComponent as AddIcon} from '../../res/images/add.svg'
 import {ReactComponent as AddedIcon} from '../../res/images/added.svg'
+import {ReactComponent as PlayIcon} from '../../res/images/player-play.svg'
 
 const ListItem = props => (
     <div className='list-item'>
@@ -19,9 +20,13 @@ const ListItem = props => (
         </div>
         {props.selectable &&  //only display add icons if the list item are selectable
             <div className='list-selection-container' id={props.selected ? 'list-selected' : ''}>
-                    <div className='list-icon-container' onClick={props.onToggle}>
-                        {props.selected ? 
-                            <AddedIcon id='list-icon-added'/> : 
+                    <div className='list-icon-container' onClick={props.play ? ()=>props.onPlay(props.item.uri): props.onToggle}>
+                        {props.play ?
+                            <PlayIcon id='list-play-icon'/>
+                            :
+                            props.selected ? 
+                            <AddedIcon id='list-icon-added'/> 
+                            : 
                             <AddIcon id='list-icon'/>
                         }
                     </div>
@@ -68,19 +73,18 @@ class List extends Component {
     render() {
         var list = null
         const { itemsToShow } = this.state
-
+     
         if(this.props.items.length > 0){
             list = this.props.items.map((item, value) => {
+                
                 if (itemsToShow !== -1 && value >= itemsToShow)
                     return 
                 var selected = this.state.selected.indexOf(value) !== -1 
                 return(<ListItem key={item.id} 
                                  item={item} 
-                                 type={this.props.type}
-                                 selectable={this.props.selectable}
                                  selected={selected}
                                  onToggle={() => this.handleToggle(value)}
-                                 contentClick={this.props.contentClick}/>)
+                                 {...this.props}/>)
             })
         }
         const emptyMessage = <div className='heading'>

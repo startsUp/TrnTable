@@ -12,10 +12,16 @@ const DashboardSidebar = props => (
         <div className='options-container'>
         {props.view !== 'Home' && <div className='sidebar-context-title'>{props.view}</div>}
         {props.view === 'Queue' && 
-                <List dark emptyMessage='No Tracks in Queue' 
+                <List dark play selectable emptyMessage='No Tracks in Queue' 
                       items={props.list}
                       contentClick={props.contentClick}
-                      selectable={false}/>
+                      onPlay={props.onPlay}/>
+        }
+        {props.view === 'Requests' && 
+                <List dark selectable emptyMessage='No Requests yet' 
+                      items={props.list}
+                      contentClick={props.contentClick}
+                      />
         }
         {props.view === 'Add Tracks' &&
             <SpotifySearch center apiRef={props.apiRef} onSearchResults={props.onSearchResults}/>

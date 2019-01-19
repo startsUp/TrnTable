@@ -12,18 +12,29 @@ constructor(props) {
 
     console.log(this.props.playlistRef)
     var artURL = placeholderArt
+    var albumName = ""
+    var trackName = "" 
+    var id = "" 
+    var artistName = ""
+
+    
     if(this.props.tracks.length > 0){
+        console.log(this.props.tracks[0])
         artURL = this.props.tracks[0].albumArt[1].url
+        id = this.props.tracks[0].id
+        trackName = this.props.tracks[0].trackName
+        albumName = this.props.tracks[0].albumName
+        artistName = this.props.tracks[0].artists
     }
     this.state = {
         token: this.props.accessToken,
         deviceId: "",
         user: this.props.user,
         error: "",
-        track: {id: "",
-                trackName: "",
-                artistName: "",
-                albumName: "",
+        track: {id: id,
+                trackName: trackName,
+                artistName: artistName,
+                albumName: albumName,
                 artURL:artURL},
         playing: false,
         position: 0,
@@ -226,9 +237,9 @@ transferPlaybackHere(shouldPlay=true) {
         })
 }
 
-startPlaylistPlayback = () => {
+startPlaylistPlayback = (offset=0) => {
     const { deviceId, token, playlistRef } = this.state
-    this.props.apiRef.play({device_id: deviceId, context_uri: playlistRef.uri})    
+    this.props.apiRef.play({device_id: deviceId, context_uri: playlistRef.uri, offset: offset})    
     .then()
     .catch((err) => console.log(err))
 }

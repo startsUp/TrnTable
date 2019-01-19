@@ -1,4 +1,5 @@
 import placeholderIcon from './res/images/spotifyIcon.png'
+import { reject } from 'q';
 export const parseData = (dataType, data, albumRef=null) => {
     if(dataType === 'songs' || dataType === 'albumSongs')
     {
@@ -83,4 +84,66 @@ export const parseData = (dataType, data, albumRef=null) => {
         })
         return artists
     }      
+}
+
+export const hostListeners = (dbRef, roomCode, initTimestamp, callback) => {
+    var requests = dbRef.collection('tracksInRoom').doc(roomCode).collection('requested').orderBy('timeAdded').startAt(initTimestamp)
+                .onSnapshot((snapshot) => {
+                    console.log(snapshot)
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") {
+                            var doc = change.doc
+                            let source = doc.metadata.hasPendingWrites ? 'Local' : 'Server'
+                            if (source === 'Server') {
+                                callback('request', doc.data())
+                            } else {
+                            // Do nothing, it's a local update so ignore it
+                            }
+                            
+                        }   
+                    })
+                })
+    var users = dbRef.collection('rooms').doc(roomCode).collection('users').orderBy('timeJoined').startAt(initTimestamp)
+                    .onSnapshot((snapshot) => {
+                        console.log(snapshot)
+                        snapshot.docChanges().forEach((change) => {
+                            if (change.type === "added") {
+                                var doc = change.doc
+                                let source = doc.metadata.hasPendingWrites ? 'Local' : 'Server'
+                                if (source === 'Server') {
+                                    //update local queueStat
+                                    callback('guest', doc.data())
+                                    
+                                } else {
+                                // Do nothing, it's a local update so ignore it
+                                }
+                                
+                            }   
+                        })
+                    })
+
+    return [{unsubscribe: requests}, {unsubscribe:users}]
+}
+
+export const guestListeners = (dbRef, roomCode, initTimestamp, callback) => {
+    
+}
+
+export const getGuests = async (dbRef, roomCode) => {
+    return new Promise((resolve, reject) => {
+        dbRef.collection('rooms').doc(roomCode).collection('users').orderBy('timeJoined').get()
+            .then((snapshot)=>{
+                resolve(snapshot.docs.map(doc=> doc.data()))
+            })
+            .catch(err => reject(err))
+    })
+} 
+export const getRequests = async (dbRef, roomCode) => {
+    return new Promise((resolve, reject) => {
+        dbRef.collection('tracksInRoom').doc(roomCode).collection('requested').orderBy('timeAdded').get()
+            .then((snapshot)=>{
+                resolve(snapshot.docs.map(doc=> doc.data()))
+            })
+            .catch(err => reject(err))
+    })
 }
