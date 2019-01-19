@@ -77,39 +77,12 @@ class App extends Component {
                 
                 if(this.state.token){
                     var res = await this.getUserInfo()
-                    console.log(res)
-                    if(!res){
-                        this.setState({page: this.state.landingPage})
-                    }
-                    else{
-                        var tracks = await this.getSessionTracks(res.room)
-
-                        this.setState({
-                            page: 'dashboard',
-                            playlistRef: res.playlistRef,
-                            roomRef: res.room,
-                            sessionType: 'host'
-                        })
-                    }
-
+                    this.showLandingPage(res)
                 }
                 else{
                     await this.refreshAccessToken(user)
                     var res = await this.getUserInfo()
-                    console.log(res)
-                    if(!res){
-                        this.setState({page: this.state.landingPage})
-                    }
-                    else{
-                        var tracks = await this.getSessionTracks(res.room)
-                        this.setState({
-                            page: 'dashboard',
-                            playlistRef: res.playlistRef,
-                            roomRef: res.room,
-                            sessionType: 'host',
-                            queue: tracks
-                        })
-                    }
+                    this.showLandingPage(res)
                 }
             }
             else if (!this.state.firebaseToken){
@@ -118,6 +91,36 @@ class App extends Component {
         })
     }
   
+    showLandingPage = async (res) => {
+        if(!res){
+            this.setState({page: this.state.landingPage})
+        }
+        else if (res.playlistRef){
+
+            var tracks = await this.getSessionTracks(res.room)
+            this.setState({
+                page: 'dashboard',
+                playlistRef: res.playlistRef,
+                roomRef: res.room,
+                sessionType: res.host ? 'host' : 'guest',
+                queue: tracks
+            })
+        }
+        else if(res.host){
+            this.setState({
+                page: 'trackImport',
+                roomRef: res.room,
+                sessionType: 'host',
+            })
+        }
+        else{
+            this.setState({
+                page: 'dashboard',
+                roomRef: res.room,
+                sessionType: 'guest'
+            })
+        }
+    }
     getUserInfo = async () => {
         return new Promise((resolve, reject) => {
             this.props.dbRef.collection('users').doc(this.state.user.uid).get()
@@ -207,7 +210,11 @@ class App extends Component {
             if(this.state.page === 'trackImport'){
                 this.setState({page: 'loading', loading: 'Creating Spotify Playlist ...'})
                 this.createPlaylist(this.getDate() + ' TrnTable Session', tracks)
-                    .then(this.setState({page: 'dashboard', sessionType: 'host', queue: tracks}))
+                    .then((playlistRef => {
+                        this.setState({page: 'dashboard', 
+                                    sessionType: 'host', 
+                                    queue: tracks,
+                                    playlistRef: playlistRef})}))
                     .catch(err=> console.trace(err))
             }
             else{
@@ -234,8 +241,10 @@ class App extends Component {
       }
       
 
-    setRoomCode = (roomCode) => {
-        this.setState({roomRef: roomCode})
+    setRoomCode = async (roomCode) => {
+        await this.setState({roomRef: roomCode})
+        var roomInfo = {host: true, room: roomCode}
+        this.props.dbRef.collection('users').doc(this.state.user.uid).set(roomInfo)
     }
 
     createPlaylist = (name, tracks) => {
@@ -286,8 +295,7 @@ class App extends Component {
                         .then(()=>{
                             console.log('%c Imported Tracks', 'color: orange;font-weight: bold')
                             console.table(playlistRef)
-                            this.setState({playlistRef: playlistRef})
-                            resolve()
+                            resolve(playlistRef)
                         })
                         .catch((err) => reject(err))
                     })

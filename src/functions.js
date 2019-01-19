@@ -147,3 +147,9 @@ export const getRequests = async (dbRef, roomCode) => {
             .catch(err => reject(err))
     })
 }
+
+export const updateNowPlaying = async (dbRef, roomCode) => {
+    return new Promise((resolve, reject) => {
+        dbRef.collection('')
+    })
+}

@@ -6,33 +6,33 @@ class SpotifySearchResults extends Component {
 
     render(){
         var emptyMessage = 'No results'
-        const { tracks, albums, playlists, artists } = this.props.data
+        const { tracks, albums, playlists, artists, query } = this.props.data
         return(
             <div className={this.props.small ? 'dashboard-search': 'search-results-container'} id='spotify-results-container'>
                 <div className='result-container'>
                     <div className='search-result-title'>Songs</div>
-                    <List id='search-result-songs' emptyMessage={emptyMessage} 
-                        selectable={true} contentClick={this.props.contentClick} items={tracks} 
+                    <List selectable  id='search-result-songs' emptyMessage={emptyMessage} 
+                        contentClick={this.props.contentClick} items={tracks} query={query}
                         type='songs' updateTracks={this.props.updateTracks} itemsToShow={3} />
                 </div>
                 <div className='result-container'>
                     <div className='search-result-title'>Albums</div>
                     <List id='search-result-albums' emptyMessage={emptyMessage} 
-                        selectable={false} contentClick={this.props.contentClick}  items={albums}
+                        contentClick={this.props.contentClick}  items={albums} query={query}
                         type='albums' updateTracks={this.props.updateTracks} itemsToShow={3}/>
                 </div>
                 <div className='result-container'>
                     <div className='search-result-title'>Playlists</div>
                     <List id='search-result-playlist' emptyMessage={emptyMessage} 
-                        selectable={false} contentClick={this.props.contentClick}  items={playlists}
+                         contentClick={this.props.contentClick}  items={playlists} query={query}
                         type='playlist' updateTracks={this.props.updateTracks} itemsToShow={3}/>
                 </div>
-                <div className='result-container'>
+                {/* <div className='result-container'>
                     <div className='search-result-title'>Artists</div>
                     <List  id='search-result-artists' emptyMessage={emptyMessage} 
-                        selectable={false} contentClick={this.props.contentClick} items={artists}
+                         contentClick={this.props.contentClick} items={artists} query={query}
                         type='artist' updateTracks={this.props.updateTracks} itemsToShow={3}/>
-                </div>                
+                </div>                 */}
             </div>
         )
     }

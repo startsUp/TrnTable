@@ -51,7 +51,7 @@ const ImportContainer = props => (
         <div className='import-main-container' id={props.showSidebar ? 'import-w-sidebar': ''}>
             {props.showSidebar && <LibrarySidebar showLibrary={props.showLibrary} view={props.view} />} 
             {props.view === 'search' ?
-                <SpotifySearchResults data={props.searchRes}/>
+                <SpotifySearchResults data={props.searchRes} {...props}/>
                 :
                 <List emptyMessage={props.emptyMessage} items={props.list} contentClick={props.contentClick}
                     type={props.view} selectable={(props.view !== 'playlist' && props.view !== 'albums' && props.view !== 'queue' )}
@@ -114,7 +114,7 @@ class ImportTrack extends Component {
     
     showTracksFor = (item) => {
         
-        if(this.state.view === 'albums'){
+        if(item.uri.includes('album')){
             if(this.state.currentAlbum.id !== item.id){
                 this.props.apiRef.getAlbumTracks(item.id, {limit:50})
                     .then((data) => {
@@ -131,7 +131,7 @@ class ImportTrack extends Component {
             }else
                 this.setState({view: 'albumTracks'})
         }
-        else if (this.state.view === 'playlist'){
+        else if (item.uri.includes('playlist')){
             if(this.state.currentPlaylist.id !== item.id){
                 this.props.apiRef.getPlaylistTracks(item.ownerID, item.id, {limit:50})
                     .then((data) => {
@@ -151,7 +151,7 @@ class ImportTrack extends Component {
     }
     updateQueue = async (show) => {
         return new Promise(async (resolve, reject)=> {
-            const {tracksToAdd, view, currentPlaylist, currentAlbum, userSavedSongs} = this.state
+            const {tracksToAdd, view, search, currentPlaylist, currentAlbum, userSavedSongs} = this.state
             if(tracksToAdd.length === 0){
               if(show)
                 await this.setState({view: 'queue'}) 
@@ -165,6 +165,8 @@ class ImportTrack extends Component {
               this.copySelectedTracksToQueue(currentAlbum.tracks, tracksToAdd)
           else if(view === 'songs')
               this.copySelectedTracksToQueue(userSavedSongs, tracksToAdd)
+          else if(view === 'search')
+              this.copySelectedTracksToQueue(search.tracks, tracksToAdd)
   
           if(show)
               await this.setState({view: 'queue'})
@@ -192,8 +194,9 @@ class ImportTrack extends Component {
             
     }
 
-    displayResults = (data) => {
+    displayResults = async (query, data) => {
 
+        await this.updateQueue(false)
         const tracks = parseData('songs', data.tracks)
         const playlists = parseData('playlist', data.playlists)
         const albums = parseData('albums', data.albums)
@@ -202,7 +205,8 @@ class ImportTrack extends Component {
         this.setState({search: {tracks: tracks, 
                                 playlists: playlists, 
                                 albums: albums, 
-                                artists: artists}, 
+                                artists: artists,
+                                query: query}, 
                       view: 'search'})
 
 
@@ -216,8 +220,8 @@ class ImportTrack extends Component {
         this.setState({popup: {show: false}})
 	}
 
-    showLibrary = (type) => {
-		this.updateQueue(false)
+    showLibrary = async (type) => {
+		await this.updateQueue(false)
 
         if(type === 'songs'){
             

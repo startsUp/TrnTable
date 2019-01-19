@@ -21,7 +21,7 @@ class SpotifySearch extends Component {
         spotifyApi.search(query, ['track', 'album', 'playlist', 'artist'])
                    .then((res)=> {
                        document.getElementById('spotify-search-input').value = ""
-                        this.props.onSearchResults(res)
+                        this.props.onSearchResults(query, res)
                     })
                     .catch(err => {
                         if(err.status === 401){

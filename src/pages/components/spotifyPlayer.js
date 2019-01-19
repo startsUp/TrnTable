@@ -21,7 +21,6 @@ constructor(props) {
     if(this.props.tracks.length > 0){
         console.log(this.props.tracks[0])
         artURL = this.props.tracks[0].albumArt[1].url
-        id = this.props.tracks[0].id
         trackName = this.props.tracks[0].trackName
         albumName = this.props.tracks[0].albumName
         artistName = this.props.tracks[0].artists
@@ -31,11 +30,17 @@ constructor(props) {
         deviceId: "",
         user: this.props.user,
         error: "",
-        track: {id: id,
+        track: {id: "",
                 trackName: trackName,
                 artistName: artistName,
                 albumName: albumName,
                 artURL:artURL},
+        listeners: ['initialization_error',
+                    'authentication_error',
+                    'account_error',
+                    'playback_error',
+                    'player_state_changed',
+                    'ready'],
         playing: false,
         position: 0,
         duration: 0,
@@ -50,9 +55,7 @@ constructor(props) {
 componentDidMount = () => {
     this.playerCheckInterval = setInterval(() => this.checkForPlayer(), 1000)
 }
-componentWillUnmount = () => {
-    this.player.disconnect()
-}
+
     
 // updateTrackForGuests = () => {
 //     this.props.dbRef
@@ -123,21 +126,30 @@ onStateChanged(playerState) {
     }
 }
 
+
 handleProgress = () => {
+    clearInterval(this.progress)
     this.progress = window.setInterval(()=>{
         if(this.state.playing && this.state.error === "")
             this.setState({position: this.state.position + 1000})
     }, 1000)
 }
+
+componentWillUnmount = () => {
+    const {listeners} = this.state
+    listeners.forEach((listener) => {
+        this.player.removeListener(listener)
+    })
+    this.player.disconnect()
+}
+
 createEventHandlers() {
     // problem setting up the player
     this.player.on('initialization_error', e => { console.error(e) })
     // problem authenticating the user.
     // either the token was invalid in the first place,
     // or it expired (it lasts one hour)
-    this.player.on('authentication_error', e => {
-    console.error(e)
-    })
+    this.player.on('authentication_error', e => {console.error(e)})
     // currently only premium accounts can use the API
     this.player.on('account_error', e => { console.error(e) })
     // loading/playing the track failed for some reason
@@ -182,7 +194,7 @@ checkForPlayer() {
 }
 
 onPrevClick = ()=> {
-    if(this.state.track.trackName === "" || this.state.error){
+    if(this.state.track.id === "" || this.state.error){
         this.startPlaylistPlayback()
         this.setState({error: ""})
         
@@ -192,7 +204,7 @@ onPrevClick = ()=> {
 }
 
 onPlayClick = () => {
-    if(this.state.track.trackName === "" || this.state.error){
+    if(this.state.track.id === "" || this.state.error){
         this.startPlaylistPlayback()
         this.setState({error: ""})
     }
@@ -201,7 +213,7 @@ onPlayClick = () => {
 }
 
 onNextClick = () => {
-    if(this.state.track.trackName === "" || this.state.error){
+    if(this.state.track.id === "" || this.state.error){
         this.startPlaylistPlayback()
         this.setState({error: ""})
   
@@ -211,7 +223,7 @@ onNextClick = () => {
 }
 seek = (value) => {
     const { track, error, duration } = this.state
-    if(track.trackName === "" || error){
+    if(track.id === "" || error){
         this.startPlaylistPlayback()
         this.setState({error: ""})
 
@@ -231,17 +243,24 @@ transferPlaybackHere(shouldPlay=true) {
 
             if(err.status === 401){
                 this.props.updateToken()
-                    .then(this.transferMyPlayback())
+                    .then(this.transferMyPlayback(shouldPlay))
             }
             
         })
 }
 
-startPlaylistPlayback = (offset=0) => {
+startPlaylistPlayback = (offset={position: 0}) => {
     const { deviceId, token, playlistRef } = this.state
     this.props.apiRef.play({device_id: deviceId, context_uri: playlistRef.uri, offset: offset})    
     .then()
-    .catch((err) => console.log(err))
+    .catch(err => {
+
+        if(err.status === 401){
+            this.props.updateToken()
+                .then(this.startPlaylistPlayback(offset))
+        }
+        
+    })
 }
 
 

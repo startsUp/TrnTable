@@ -89,7 +89,7 @@ class Dashboard extends Component {
         if(type ==='host'){
             var guests = await getGuests(dbRef, roomCode)
             var requests = await getRequests(dbRef, roomCode)
-            console.log(guests, requests)
+            this.setState({guests: guests, requests: requests})
         }
     }
     componentWillUnmount = () => {

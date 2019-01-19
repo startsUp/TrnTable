@@ -41,15 +41,17 @@ class List extends Component {
         itemsToShow: this.props.itemsToShow ? this.props.itemsToShow : -1, 
     }
     componentDidUpdate = (prevProps, prevState) => {
-        
-        
-        if (prevProps.type !== this.props.type && prevState.selected.length !== 0)
-        {
-            prevProps.updateTracks(prevState.selected.slice())
-            this.setState({selected: []})
+
+        if (prevState.selected.length !== 0){
+            console.log({prev: prevProps, next: this.props})
+            if (prevProps.type !== this.props.type || prevProps.query !== this.props.query){
+                
+                prevProps.updateTracks(prevState.selected.slice())
+                this.setState({selected: []})
+            }
         }
-            
     }
+
     handleToggle = value => {
         const { selected } = this.state
         const currentIndex = selected.indexOf(value)
@@ -64,6 +66,7 @@ class List extends Component {
         this.setState({
           selected: newSelected,
         })
+    
         this.props.updateTracks(newSelected)
     }
 
