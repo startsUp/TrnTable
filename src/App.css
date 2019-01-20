@@ -768,6 +768,14 @@ display: none;
     background: rgba(25, 20, 20, 0.8);
     display: grid;
     grid-template-columns: 1fr 4fr 1fr;
+    position: absolute;
+    width: 100%;
+    box-sizing: border-box;
+    height: 3em;
+    z-index: 10;
+}
+#dashboard-header-dark{
+    background: rgba(25, 20, 20, 0.985);
 }
 
 .dashboard-roominfo{
@@ -794,6 +802,8 @@ display: none;
 }
 .dashboard-view-container{ /*change*/
     display: grid;
+    height: 100vh;
+    padding-top: 3em;
 }
 #dashboard-menu-icon{
     position: absolute;
@@ -866,6 +876,30 @@ display: none;
     cursor: pointer;
     fill: white;
 } */
+
+/*---------------------------------------------------------- 
+------------------------------------------------------------  
+                        SETTINGS
+------------------------------------------------------------  
+-----------------------------------------------------------*/
+#settings-logo{
+    height: 2em;
+    width: 2em;
+}
+
+.settings-container{
+    position: absolute;
+    height: 100vh;
+    width: 100vw;
+    padding-top: 3em;
+    box-sizing: border-box;
+}
+.settings-window{
+    background: rgba(25, 20, 20, 0.985);
+    z-index: 3;
+    height: 100%;
+    position: relative;
+}
 
 /*//////////////////////////////////////////////////////////
 ---------------------------------------------------------- 

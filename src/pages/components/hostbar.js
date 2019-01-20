@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import AppLogo from './logo'
 const HostBar = props => (
-    <div className='dashboard-header'>
+    <div className='dashboard-header' id={props.dark?'dashboard-header-dark':''}>
         <div className='dashboard-roominfo'>
             <AppLogo styleName='dashboard-logo'/>
             <div id='host-roomcode'>{props.roomCode}</div>

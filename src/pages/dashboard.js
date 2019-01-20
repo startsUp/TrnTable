@@ -4,7 +4,7 @@ import appIcon from '../res/images/logo.webp'
 import SpotifyPlayer from './components/spotifyPlayer'
 import GuestPlayer from './components/guestPlayer'
 import HostBar from './components/hostbar'
-import Settings from './components/settings'
+import Settings, {DefaultHostSettings} from './components/settings'
 import AppLogo from './components/logo'
 import DashboardSidebar from './components/siderbar'
 import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
@@ -60,9 +60,11 @@ class Dashboard extends Component {
             sidebar: {show: false, view: 'Home'},
             view: 'normal',
             guests: [],
-            requests: []
-        }
+            requests: [],
+            settings: DefaultHostSettings
+            }
     }
+    
  
 
     componentDidMount = () => {
@@ -160,7 +162,8 @@ class Dashboard extends Component {
                 tracks, 
                 sidebar,
                 search,
-                requests } = this.state
+                requests,
+                settings } = this.state
         const { roomCode, 
                 user, 
                 apiRef, 
@@ -168,7 +171,7 @@ class Dashboard extends Component {
                 accessToken } = this.props
         
         const hostBarIcon = settingsView ? <CloseIcon className='dash-logo' onClick={this.toggleSettings}/> : 
-                                           <SettingsIcon className='dash-logo' onClick={this.toggleSettings}/>
+                                           <SettingsIcon className='dash-logo' id='settings-logo' onClick={this.toggleSettings}/>
         const guestsIcon = <div className='dashboard-roominfo' id='guest-logo'>
                                 <div id='host-roomcode'>{guests.length}</div>
                                 <GuestsIcon className='dash-logo'/>
@@ -180,7 +183,7 @@ class Dashboard extends Component {
                             [{name: 'Request Tracks'}]
         return (
             <div className={host ? 'dashboard-container' : 'dashboard-guest-container'}>
-                <HostBar roomCode={roomCode} 
+                <HostBar dark={settingsView} roomCode={roomCode} 
                             title={ host ? ` ${user.displayName}'s Session` :
                                 'TrnTable Session'}
                             icon={hostBarIcon}
@@ -189,6 +192,7 @@ class Dashboard extends Component {
                 />
                 {settingsView && <Settings endSession={this.stopSession} 
                                            close={this.toggleSettings}
+                                           settings={settings}
                                  />
                 }
                 <div className='sidebar-container'>
