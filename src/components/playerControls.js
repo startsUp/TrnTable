@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
-import '../../App.css'
-import {ReactComponent as PlayIcon} from '../../res/images/player-play.svg'
-import {ReactComponent as PauseIcon} from '../../res/images/player-pause.svg'
-import {ReactComponent as NextIcon} from '../../res/images/player-next.svg'
-import {ReactComponent as LikeIcon} from '../../res/images/player-like.svg'
+import '../App.css'
+import {ReactComponent as PlayIcon} from '../res/images/player-play.svg'
+import {ReactComponent as PauseIcon} from '../res/images/player-pause.svg'
+import {ReactComponent as NextIcon} from '../res/images/player-next.svg'
+import {ReactComponent as LikeIcon} from '../res/images/player-like.svg'
 const PlayerControls = props => (
     <div className='controls-container'>
         {props.votingEnabled &&

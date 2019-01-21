@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import '../../App.css'
+import '../App.css'
 
 const SearchInput = props => (
     <div className='search-container' style={props.center && {margin: '0.5em auto'}}>

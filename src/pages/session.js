@@ -3,9 +3,9 @@ import '../App.css'
 import djIcon from '../res/images/dj.png'
 import djIconW from '../res/images/djW.png'
 import speakerIconW from '../res/images/speakersW.png'
-import AppLogo from './components/logo'
+import AppLogo from '../components/logo'
 import speakerIcon from '../res/images/speakers.png'
-import {DefaultHostSettings} from './components/settings'
+import {DefaultHostSettings} from '../components/settings'
 
 
 const Divider = props => {

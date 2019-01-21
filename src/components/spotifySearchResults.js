@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import '../../App.css'
+import '../App.css'
 import List from './list'
 
 class SpotifySearchResults extends Component {
@@ -12,20 +12,20 @@ class SpotifySearchResults extends Component {
                 <div className='result-container'>
                     <div className='search-result-title'>Songs</div>
                     <List selectable  id='search-result-songs' emptyMessage={emptyMessage} 
-                        contentClick={this.props.contentClick} items={tracks} query={query}
-                        type='songs' updateTracks={this.props.updateTracks} itemsToShow={3} />
+                         items={tracks} query={query}
+                        type='songs'  itemsToShow={3} {...this.props}/>
                 </div>
                 <div className='result-container'>
                     <div className='search-result-title'>Albums</div>
                     <List id='search-result-albums' emptyMessage={emptyMessage} 
-                        contentClick={this.props.contentClick}  items={albums} query={query}
-                        type='albums' updateTracks={this.props.updateTracks} itemsToShow={3}/>
+                         items={albums} query={query}
+                        type='albums' itemsToShow={3} {...this.props}/>
                 </div>
                 <div className='result-container'>
                     <div className='search-result-title'>Playlists</div>
                     <List id='search-result-playlist' emptyMessage={emptyMessage} 
-                         contentClick={this.props.contentClick}  items={playlists} query={query}
-                        type='playlist' updateTracks={this.props.updateTracks} itemsToShow={3}/>
+                          items={playlists} query={query}
+                        type='playlist'  itemsToShow={3} {...this.props}/>
                 </div>
                 {/* <div className='result-container'>
                     <div className='search-result-title'>Artists</div>

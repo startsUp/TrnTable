@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import '../../App.css'
+import '../App.css'
 
 const Header = props => (
     <div className='header-container'>

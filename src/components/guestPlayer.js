@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import '../../App.css'
-import {ReactComponent as LikeIcon} from '../../res/images/player-like.svg'
+import '../App.css'
+import {ReactComponent as LikeIcon} from '../res/images/player-like.svg'
 class GuestPlayer extends Component {
     constructor(props) {
         super(props)

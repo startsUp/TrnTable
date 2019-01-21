@@ -1,12 +1,12 @@
 import React, { Component } from 'react'
 import '../App.css'
 import appIcon from '../res/images/logo.webp'
-import SpotifyPlayer from './components/spotifyPlayer'
-import GuestPlayer from './components/guestPlayer'
-import HostBar from './components/hostbar'
-import Settings, {DefaultHostSettings} from './components/settings'
-import AppLogo from './components/logo'
-import DashboardSidebar from './components/siderbar'
+import SpotifyPlayer from '../components/spotifyPlayer'
+import GuestPlayer from '../components/guestPlayer'
+import HostBar from '../components/hostbar'
+import Settings, {newSettings} from '../components/settings'
+import AppLogo from '../components/logo'
+import DashboardSidebar from '../components/siderbar'
 import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
 import {ReactComponent as SettingsIcon} from '../res/images/dashboard-settings.svg'
 import {ReactComponent as CloseIcon} from '../res/images/dashboard-close.svg'
@@ -48,6 +48,7 @@ class Dashboard extends Component {
     constructor(props){
         super(props)
 
+        console.log({props: this.props})
         if(this.props.type === 'host')
             this.spotifyPlayer = React.createRef()
         this.state = {
@@ -61,7 +62,7 @@ class Dashboard extends Component {
             view: 'normal',
             guests: [],
             requests: [],
-            settings: DefaultHostSettings
+            settings: this.props.settings
             }
     }
     
@@ -69,8 +70,7 @@ class Dashboard extends Component {
 
     componentDidMount = () => {
 
-        this.props.dbRef.collection('rooms').doc(this.props.roomCode).get()
-            .then((snapshot) => console.log(snapshot.data()))
+
         const {type, dbRef, roomCode} = this.props
         this.initialzie(type, dbRef, roomCode)  //fetch necessary data
 
@@ -110,7 +110,6 @@ class Dashboard extends Component {
             this.setState({requests: [...requests, data]})
      
     }
-
     updateCurrentTrack = () => {
         
     }
@@ -132,8 +131,6 @@ class Dashboard extends Component {
                                 playlists: playlists, 
                                 albums: albums, 
                                 artists: artists}})
-
-
     }
     playSong = (uri) => {
         this.spotifyPlayer.current.startPlaylistPlayback({uri: uri})
@@ -141,9 +138,43 @@ class Dashboard extends Component {
     toggleSettings = () => {
         this.setState({settingsView: !this.state.settingsView})
     }
+
+    handleSettingsChange = async (values) => {
+        await this.setState({settings: newSettings(values)})
+        this.updateSettings()
+    }
+    
+    updateSettings = () => {
+        this.props.dbRef.collection('rooms').doc(this.props.roomCode).set({
+            settings: this.state.settings
+        })
+    }
+
+    deletePlaylist = () => {
+        const { user, playlistRef, apiRef } = this.props
+        apiRef.unfollowPlaylist(user.uid, playlistRef.id)
+                .catch(err => {
+                    if(err.status === 401){
+                        this.props.updateToken()
+                            .then(this.getSavedTracks())
+                    }
+                }) 
+   }
+
     stopSession = () => {
         //delete session info from database
+        const {settings} = this.state
+        const {roomCode} = this.props
+        if (settings[0].value){
+            this.deletePlaylist()
+        } 
+        console.log(roomCode)
         this.props.dbRef.collection('users').doc(this.props.user.uid).delete()
+        this.props.dbRef.collection('rooms').doc(roomCode).delete()
+            .catch(err=>console.log(err))
+        this.props.dbRef.collection('tracksInRoom').doc(roomCode).delete()
+        .catch(err=>console.log(err))
+
         this.props.changePage('sessionType')
     }
     getTracks = () => {
@@ -172,6 +203,7 @@ class Dashboard extends Component {
                 updateToken, 
                 accessToken } = this.props
         
+        
         const hostBarIcon = settingsView ? <CloseIcon className='dash-logo' onClick={this.toggleSettings}/> : 
                                            <SettingsIcon className='dash-logo' id='settings-logo' onClick={this.toggleSettings}/>
         const guestsIcon = <div className='dashboard-roominfo' id='guest-logo'>
@@ -195,6 +227,7 @@ class Dashboard extends Component {
                 {settingsView && <Settings endSession={this.stopSession} 
                                            close={this.toggleSettings}
                                            settings={settings}
+                                           updateSettings={this.handleSettingsChange}
                                  />
                 }
                 <div className='sidebar-container'>

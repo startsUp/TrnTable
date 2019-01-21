@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import {ReactComponent as HomeIcon} from '../../res/images/dashboard-home.svg'
-import '../../App.css'
+import {ReactComponent as HomeIcon} from '../res/images/dashboard-home.svg'
+import '../App.css'
 import List from './list'
 import SpotifySearch from './spotifySearch'
 import SpotifySearchResults from './spotifySearchResults'

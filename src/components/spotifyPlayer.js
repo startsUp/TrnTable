@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
-import '../../App.css'
+import '../App.css'
 import CurrentTrack from './track'
 import PlayerControls from './playerControls'
 import ConfirmActionPopup from './confirmPopup.js'
-import placeholderArt from '../../res/images/placeholderTrackImage.png'
+import placeholderArt from '../res/images/placeholderTrackImage.png'
 import ProgressBar from './progressBar'
 import { Direction } from 'react-player-controls'
 class SpotifyPlayer extends Component {

@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import '../../App.css'
-import {ReactComponent as CloseIcon} from '../../res/images/add.svg'
+import '../App.css'
+import {ReactComponent as CloseIcon} from '../res/images/add.svg'
 
 const Divider = props => {
     return(<div className='divider' style={props.customStyle}/>)

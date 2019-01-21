@@ -4,7 +4,8 @@ import Dashboard from './pages/dashboard'
 import SessionType from './pages/session'
 import ImportTrack from './pages/trackImport'
 import { getSpotifyToken } from './helpers'
-import AppLogo from './pages/components/logo'
+import {DefaultHostSettings} from './components/settings'
+import AppLogo from './components/logo'
 import './App.css'
 import SpotifyWebApi from 'spotify-web-api-js'
 const spotifyApi = new SpotifyWebApi()
@@ -53,7 +54,8 @@ class App extends Component {
             queue: [], 
             sessionType: sessionType,
             loading: '',
-            playlistRef: null
+            playlistRef: null,
+            settings: DefaultHostSettings   
         }
       
     }
@@ -92,10 +94,14 @@ class App extends Component {
     }
   
     showLandingPage = async (res) => {
+
         if(!res){
             this.setState({page: this.state.landingPage})
+            return
         }
-        else if (res.playlistRef){
+        const roomInfo = await this.getRoomInfo(res.room)
+        console.log({ROOMINFO: roomInfo})
+        if (res.playlistRef){
 
             var tracks = await this.getSessionTracks(res.room)
             this.setState({
@@ -103,7 +109,8 @@ class App extends Component {
                 playlistRef: res.playlistRef,
                 roomRef: res.room,
                 sessionType: res.host ? 'host' : 'guest',
-                queue: tracks
+                queue: tracks,
+                settings: roomInfo.settings
             })
         }
         else if(res.host){
@@ -111,15 +118,34 @@ class App extends Component {
                 page: 'trackImport',
                 roomRef: res.room,
                 sessionType: 'host',
+                settings: roomInfo.settings
             })
         }
         else{
             this.setState({
                 page: 'dashboard',
                 roomRef: res.room,
-                sessionType: 'guest'
+                sessionType: 'guest',
+                settings: roomInfo.settings
             })
         }
+    }
+    getRoomInfo = async (roomCode) => {
+        return new Promise((resolve, reject) => {
+            this.props.dbRef.collection('rooms').doc(roomCode).get()
+            .then((snapshot) => {
+                if(snapshot.exists){
+                    resolve(snapshot.data())
+                }
+                   
+                else{
+                    resolve(false)
+                } 
+
+            })
+            .catch(err => reject(err))
+        })
+        
     }
     getUserInfo = async () => {
         return new Promise((resolve, reject) => {
@@ -331,7 +357,7 @@ class App extends Component {
         page = <Dashboard user={user} firebase={this.props.firebase} playlistRef={playlistRef} 
                 changePage={this.changePage} apiRef={spotifyApi} dbRef={this.props.dbRef} tracks={queue}
                 roomCode={this.state.roomRef} accessToken={this.state.token} 
-                updateToken={this.refreshAccessToken} type={sessionType}/>
+                updateToken={this.refreshAccessToken} type={sessionType} settings={this.state.settings}/>
     else if(currentPage === 'trackImport') 
         page = <ImportTrack roomCode={this.state.roomRef} user={user} apiRef={spotifyApi}
                 roomCode={this.state.roomRef} changePage={this.changePage}

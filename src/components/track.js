@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import '../../App.css'
+import '../App.css'
 
 const CurrentTrack = props => (
     <div className='track-container'>

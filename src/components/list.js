@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
-import '../../App.css'
-import {ReactComponent as AddIcon} from '../../res/images/add.svg'
-import {ReactComponent as AddedIcon} from '../../res/images/added.svg'
-import {ReactComponent as PlayIcon} from '../../res/images/player-play.svg'
+import '../App.css'
+import {ReactComponent as AddIcon} from '../res/images/add.svg'
+import {ReactComponent as AddedIcon} from '../res/images/added.svg'
+import {ReactComponent as PlayIcon} from '../res/images/player-play.svg'
 
 const ListItem = props => (
     <div className='list-item'>

@@ -1,16 +1,16 @@
 import React, { Component } from 'react'
 import '../App.css'
-import List from './components/list'
-import HostBar from './components/hostbar'
+import List from '../components/list'
+import HostBar from '../components/hostbar'
 import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
 
 import {ReactComponent as LoadingIcon} from '../res/images/loading.svg'
 import {ReactComponent as QueueIcon} from '../res/images/twotone-playlist_add-24px.svg'
 import {ReactComponent as StartIcon} from '../res/images/import-done.svg'
-import ConfirmActionPopup from './components/confirmPopup'
-import Header from './components/header'
-import SpotifySearch from './components/spotifySearch'
-import SpotifySearchResults from './components/spotifySearchResults'
+import ConfirmActionPopup from '../components/confirmPopup'
+import Header from '../components/header'
+import SpotifySearch from '../components/spotifySearch'
+import SpotifySearchResults from '../components/spotifySearchResults'
 import { parseData, getViewDescription } from '../functions'
 
 //A SearchResultSection can be used to show track, album and artist results

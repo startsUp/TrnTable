@@ -890,7 +890,7 @@ display: none;
     height: 100%;
 }
 .settings-list{
-    height: 70%;
+    height: 65%;
     overflow: auto;
     padding: 1.5em 3em;
 }
@@ -930,6 +930,11 @@ display: none;
 #setting-end-button{
     max-width: 25vw;
     margin: 0.2em auto;
+}
+
+.settings-buttons-container{
+    display: inline-flex;
+
 }
 /*//////////////////////////////////////////////////////////
 ---------------------------------------------------------- 
