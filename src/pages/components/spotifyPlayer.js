@@ -145,15 +145,18 @@ componentWillUnmount = () => {
 
 createEventHandlers() {
     // problem setting up the player
-    this.player.on('initialization_error', e => { console.error(e) })
+    this.player.on('initialization_error', e => { console.trace(e) })
     // problem authenticating the user.
     // either the token was invalid in the first place,
     // or it expired (it lasts one hour)
-    this.player.on('authentication_error', e => {console.error(e)})
+    this.player.on('authentication_error', e => {
+        this.props.updateToken()
+        console.trace(e)
+    })
     // currently only premium accounts can use the API
-    this.player.on('account_error', e => { console.error(e) })
+    this.player.on('account_error', e => { console.trace(e) })
     // loading/playing the track failed for some reason
-    this.player.on('playback_error', e => { console.error(e) })
+    this.player.on('playback_error', e => { console.trace(e) })
 
     // Playback status updates
     this.player.on('player_state_changed', state => this.onStateChanged(state))

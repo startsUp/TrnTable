@@ -29,7 +29,7 @@
     height: 22px;
     width: 22px;
     left: 6px;
-    bottom: 5px;
+    bottom: 4.5px;
     background-color: white;
     -webkit-transition: .2s;
     transition: .2s;
@@ -51,9 +51,28 @@
   
   /* Rounded sliders */
   .slider.round {
-    border-radius: 2em;
+    border-radius: 1em;
   }
   
   .slider.round:before {
     border-radius: 50%;
   }
+  
+#dropdown-select{
+    background: #ccc;
+    border-radius: 1em;
+    height: 30px;
+    width: 60px;
+    border: none;
+    text-align-last: center;
+}
+
+#input-setting{
+    background: #ccc;
+    border-radius: 0.3em;
+    height: 30px;
+    width: 55px;
+    border: none;
+    text-align: center;
+    padding: 0 0 0 5px;
+}

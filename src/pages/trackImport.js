@@ -11,7 +11,7 @@ import ConfirmActionPopup from './components/confirmPopup'
 import Header from './components/header'
 import SpotifySearch from './components/spotifySearch'
 import SpotifySearchResults from './components/spotifySearchResults'
-import { parseData } from '../functions'
+import { parseData, getViewDescription } from '../functions'
 
 //A SearchResultSection can be used to show track, album and artist results
 
@@ -49,14 +49,17 @@ const ImportContainer = props => (
 			<div className='show-queue-button' onClick={() => props.startSession('startSession')}> Start Session </div>
         </div>
         <div className='import-main-container' id={props.showSidebar ? 'import-w-sidebar': ''}>
-            {props.showSidebar && <LibrarySidebar showLibrary={props.showLibrary} view={props.view} />} 
-            {props.view === 'search' ?
-                <SpotifySearchResults data={props.searchRes} {...props}/>
-                :
-                <List emptyMessage={props.emptyMessage} items={props.list} contentClick={props.contentClick}
-                    type={props.view} selectable={(props.view !== 'playlist' && props.view !== 'albums' && props.view !== 'queue' )}
-                    updateTracks={props.updateTracks}/>
-            }
+            {props.showSidebar && <LibrarySidebar showLibrary={props.showLibrary} view={props.view} />}
+            <div id='list-context'>
+                <div className='sidebar-context-title' id='context-title'>{props.contextName}</div>
+                {props.view === 'search' ?
+                    <SpotifySearchResults data={props.searchRes} {...props}/>
+                    :
+                    <List emptyMessage={props.emptyMessage} items={props.list} contentClick={props.contentClick}
+                        type={props.view} selectable={(props.view !== 'playlist' && props.view !== 'albums' && props.view !== 'queue' )}
+                        updateTracks={props.updateTracks}/>
+                }
+            </div> 
         </div>
         
         
@@ -119,7 +122,7 @@ class ImportTrack extends Component {
                 this.props.apiRef.getAlbumTracks(item.id, {limit:50})
                     .then((data) => {
                         
-                        this.setState({currentAlbum: {id: item.id, tracks: parseData('albumSongs', data, item)}, 
+                        this.setState({currentAlbum: {id: item.id,name: item.name, tracks: parseData('albumSongs', data, item)}, 
                                         view:'albumTracks',})
                     })
                     .catch(err => {
@@ -135,7 +138,7 @@ class ImportTrack extends Component {
             if(this.state.currentPlaylist.id !== item.id){
                 this.props.apiRef.getPlaylistTracks(item.ownerID, item.id, {limit:50})
                     .then((data) => {
-                        this.setState({currentPlaylist: {id: item.id, tracks: parseData('songs', data)}, 
+                        this.setState({currentPlaylist: {id: item.id,name: item.name, tracks: parseData('songs', data)}, 
                                         view:'playlistTracks'})
                     })
                     .catch(err => {
@@ -351,6 +354,7 @@ class ImportTrack extends Component {
         else if (view === 'playlistTracks')
             list = currentPlaylist.tracks
 
+        var contextName = getViewDescription(view, currentPlaylist, currentAlbum)
         return (
             <div className='container-w-hostbar' id='track-import'>
                 <HostBar title='Add Tracks' 
@@ -373,6 +377,7 @@ class ImportTrack extends Component {
                                 displayResults={this.displayResults}
 								startSession={this.confirmAction}
                                 searchRes={search}
+                                contextName={contextName}
                 />
 				{popup.show && <ConfirmActionPopup popupInfo={popup}/>}
             </div> 

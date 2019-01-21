@@ -4,6 +4,7 @@ export const parseData = (dataType, data, albumRef=null) => {
     if(dataType === 'songs' || dataType === 'albumSongs')
     {
         
+        console.log('Data', data)
         var tracks = []
         data.items.forEach(item => { 
             var track = item.track ? item.track : item
@@ -153,3 +154,33 @@ export const updateNowPlaying = async (dbRef, roomCode) => {
         dbRef.collection('')
     })
 }
+
+export const getViewDescription = (view, playlist, album) => {
+    var desc = null
+    switch (view) {
+        case 'queue':
+            desc = 'Tracks Added'
+            break;
+        case 'search':
+            desc = 'Search Results'
+            break;
+        case 'playlist':
+            desc = 'Saved Playlists'
+            break;
+        case 'songs': 
+            desc = 'Saved Songs'
+            break;
+        case 'albums': 
+            desc = 'Saved Albums'
+            break;
+        case 'playlistTracks': 
+            desc = playlist.name
+            break;  
+        case 'albumTracks': 
+            desc = album.name
+            break;  
+        default:
+            break;
+    }
+    return desc
+} 

@@ -5,6 +5,7 @@ import djIconW from '../res/images/djW.png'
 import speakerIconW from '../res/images/speakersW.png'
 import AppLogo from './components/logo'
 import speakerIcon from '../res/images/speakers.png'
+import {DefaultHostSettings} from './components/settings'
 
 
 const Divider = props => {
@@ -105,7 +106,8 @@ class SessionType extends Component {
         //initiate room in firestore
         var dbRef = this.props.dbRef
         dbRef.collection('rooms').doc(roomCode).set({
-            createdTimestamp: new Date()
+            createdTimestamp: new Date(),
+            settings: DefaultHostSettings
         })
         .then((snapshot) => {
             dbRef.collection('rooms')

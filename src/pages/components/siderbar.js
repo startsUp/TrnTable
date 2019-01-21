@@ -24,7 +24,7 @@ const DashboardSidebar = props => (
                       />
         }
         {props.view === 'Add Tracks' &&
-            <SpotifySearch center apiRef={props.apiRef} onSearchResults={props.onSearchResults}/>
+            <SpotifySearch center padded apiRef={props.apiRef} onSearchResults={props.onSearchResults}/>
         }
         {props.searchRes && <SpotifySearchResults small data={props.searchRes}/>}
         {props.view === 'Home' && props.options.map((option) =>{

@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import '../../App.css'
 
 const SearchInput = props => (
-    <div className='search-container' style={props.center && {margin: 'auto'}}>
+    <div className='search-container' style={props.center && {margin: '0.5em auto'}}>
         <input className='search-input' autoComplete='off' onKeyPress={(e)=>(e.key==='Enter' && props.submit())} id={props.inputID} placeholder='Search... '/>
         <div className='search-button' onClick={props.submit}>Search</div>
     </div>

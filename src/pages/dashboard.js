@@ -69,7 +69,8 @@ class Dashboard extends Component {
 
     componentDidMount = () => {
 
-        
+        this.props.dbRef.collection('rooms').doc(this.props.roomCode).get()
+            .then((snapshot) => console.log(snapshot.data()))
         const {type, dbRef, roomCode} = this.props
         this.initialzie(type, dbRef, roomCode)  //fetch necessary data
 
@@ -119,7 +120,8 @@ class Dashboard extends Component {
         this.setState({sidebar: {...sidebar, view: option}})
     }
 
-    displayResults = (data) => {
+    displayResults = (query, data) => {
+        
         const tracks = parseData('songs', data.tracks)
         const playlists = parseData('playlist', data.playlists)
         const albums = parseData('albums', data.albums)
