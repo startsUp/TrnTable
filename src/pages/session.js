@@ -146,30 +146,39 @@ class SessionType extends Component {
     }
 
 
-
-    enterRoom = (roomCode) => {
+    
+    enterRoom = async (roomCode) => {
         
 
         // check if the room exists 
 
         if(this.state.sessionType === 'host'){
-            this.props.setRoomCode(this.state.roomCode)
+            this.props.setRoomCode(this.state.roomCode, true)
             this.props.changePage('trackImport')
         }
             
         else
         {
-       
-            
+  
             //validate with database
             this.getRoom(roomCode)
-            .then((document) => {
+            .then(async (document) => {
                 if(document.exists){
-                    this.props.setRoomCode(roomCode)
-                    this.props.changePage('dashboard')
+                    var tracks = await this.props.getSessionTracks(roomCode)
+                    if(!tracks){
+                        this.setState({
+                            input: {isValid: false, 
+                                    error: 'Room exists but session has not started yet.'}
+                        })
+                        return
+                    }
+                    else{
+                        await this.props.setQueue(tracks)
+                        await this.props.setRoomCode(roomCode, false)
+                        this.props.changePage('dashboard')
+                    }
                 }
-                    
-                else {
+                 else {
                     
                     this.setState({
                         input: {isValid: false, 

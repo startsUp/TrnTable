@@ -230,8 +230,7 @@ class App extends Component {
 		}
 		return hashParams
     }
-    
-    changePage = (nextPage, tracks=null, playlistRef=null) => {
+    changePage = async (nextPage, tracks=null, playlistRef=null) => {
         if(nextPage === 'dashboard') {
             if(this.state.page === 'trackImport'){
                 this.setState({page: 'loading', loading: 'Creating Spotify Playlist ...'})
@@ -244,7 +243,11 @@ class App extends Component {
                     .catch(err=> console.trace(err))
             }
             else{
-                this.setState({page: 'dashboard', sessionType: 'guest'})
+                var roomInfo = await this.getRoomInfo(this.state.roomRef)
+                this.setState({page: 'dashboard', 
+                               sessionType: 'guest',
+                               settings: roomInfo.settings,
+                               playlistRef: roomInfo.playlistRef})
             }
         }  
         else
@@ -266,16 +269,23 @@ class App extends Component {
         return day + ' ' + monthNames[monthIndex] + ' ' + year
       }
       
-
-    setRoomCode = async (roomCode) => {
+    setQueue = async (tracks) => {
+        await this.setState({queue: tracks})
+    }
+    setRoomCode = async (roomCode, isHost) => {
         await this.setState({roomRef: roomCode})
-        var roomInfo = {host: true, room: roomCode}
+        var roomInfo = {host: isHost, room: roomCode}
         this.props.dbRef.collection('users').doc(this.state.user.uid).set(roomInfo)
     }
 
-    addMultipleTracks = async (tracks) => {
+    addMultipleTracks = async (tracks, playlist) => {
         return new Promise((resolve, reject) => {
             var batch = this.props.dbRef.batch()
+            var room = this.props.dbRef.collection('rooms').doc(this.state.roomRef)
+            var user = this.props.dbRef.collection('users').doc(this.state.user.uid)
+            batch.set(user, {playlistRef: playlist})
+            batch.set(room, {playlistRef: playlist})
+
             tracks.forEach((track) => { 
                 //generate unique track id
                 var trackRef = this.props.dbRef.collection('tracksInRoom')
@@ -287,6 +297,7 @@ class App extends Component {
             .catch((err) => reject(err))
         })
     }
+
     createPlaylist = async (name, tracks) => {
         return new Promise((resolve, reject) => {
             console.log('%c Creating Playlist', 'color: orange;font-weight: bold')
@@ -300,21 +311,13 @@ class App extends Component {
                         owner: playlist.owner,
                         tracks: tracks.length
                     }
-                    var userInfo = {playlistRef: playlistRef,
-                                    host: true,
-                                    room: this.state.roomRef}
 
                      //store playlist object in state
-           
-                    this.props.dbRef
-                                .collection('users')
-                                .doc(this.state.user.uid)
-                                .set(userInfo)
                                 
                     return playlistRef
                 })
                 .then((playlistRef) => {
-                    this.addMultipleTracks(tracks)
+                    this.addMultipleTracks(tracks, playlistRef)
                         .then(()=>{
                             this.importTracksToPlaylist(this.state.user.uid, playlistRef.id, tracks.map(track => track.uri), 0)
                             .then(()=>resolve(playlistRef))
@@ -337,6 +340,7 @@ class App extends Component {
         
     }
 
+    
   render() {
 
     var page = <LoadingScreen message={this.state.loading}/>
@@ -344,6 +348,8 @@ class App extends Component {
     const { user, sessionType, queue, playlistRef } = this.state
     if(currentPage === 'sessionType') 
         page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} 
+                            getSessionTracks={this.getSessionTracks}
+                            setQueue={this.setQueue}
                             user={user} setRoomCode={this.setRoomCode}/>
     else if(currentPage === 'dashboard') 
         page = <Dashboard user={user} firebase={this.props.firebase} 
