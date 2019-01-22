@@ -191,7 +191,6 @@ class SessionType extends Component {
 
 
     render() {
-        console.log(this.props.user)
         var card = null
         var headerInfo = null
         if(this.state.sessionType){

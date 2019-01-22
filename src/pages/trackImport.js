@@ -11,7 +11,7 @@ import ConfirmActionPopup from '../components/confirmPopup'
 import Header from '../components/header'
 import SpotifySearch from '../components/spotifySearch'
 import SpotifySearchResults from '../components/spotifySearchResults'
-import { parseData, getViewDescription } from '../functions'
+import { parseData, getViewDescription, isAlreadyInQueue } from '../functions'
 
 //A SearchResultSection can be used to show track, album and artist results
 
@@ -292,14 +292,7 @@ class ImportTrack extends Component {
             this.setState({view: 'albums'})
         }
     }
-    isAlreadyInQueue = (track) => {
-		const queue = this.state.queue
-		for (let i = 0; i < queue.length; i++) {
-			if(queue[i].id === track.id)
-				return true
-		}
-		return false
-	}
+
 	
 	//create new function for repeated blocks in show Queue
 	//only change view if it is being called by queue button press
@@ -308,7 +301,7 @@ class ImportTrack extends Component {
 		var updatedQueue = this.state.queue.slice()
 		allTracks.forEach((track, indexVal) =>{
 			if(selectedTracks.indexOf(indexVal) !== -1){
-				if(!this.isAlreadyInQueue(track))
+				if(!isAlreadyInQueue(this.state.queue, track))
 					queue.push(Object.assign(track))
 			}
 				

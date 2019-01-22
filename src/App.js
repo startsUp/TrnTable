@@ -273,7 +273,21 @@ class App extends Component {
         this.props.dbRef.collection('users').doc(this.state.user.uid).set(roomInfo)
     }
 
-    createPlaylist = (name, tracks) => {
+    addMultipleTracks = async (tracks) => {
+        return new Promise((resolve, reject) => {
+            var batch = this.props.dbRef.batch()
+            tracks.forEach((track) => { 
+                //generate unique track id
+                var trackRef = this.props.dbRef.collection('tracksInRoom')
+                                               .doc(this.state.roomRef)
+                                               .collection('tracks').doc()
+                batch.set(trackRef, {track: track, timeAdded: new Date()})
+            })
+            batch.commit().then(() => resolve())
+            .catch((err) => reject(err))
+        })
+    }
+    createPlaylist = async (name, tracks) => {
         return new Promise((resolve, reject) => {
             console.log('%c Creating Playlist', 'color: orange;font-weight: bold')
             console.log({name, tracks})
@@ -300,37 +314,15 @@ class App extends Component {
                     return playlistRef
                 })
                 .then((playlistRef) => {
-                    //write all tracks added by host, to the database (as a batch)
-                    console.log('%c Playlist Created', 'color: orange;font-weight: bold')
-                     console.table(playlistRef)
-
-                    var batch = this.props.dbRef.batch()
-                    
-                    tracks.forEach((track) => { 
-                        //generate unique track id
-                        var trackRef = this.props.dbRef.collection('tracksInRoom')
-                                                       .doc(this.state.roomRef)
-                                                       .collection('tracks').doc()
-                        batch.set(trackRef, {track: track, timeAdded: new Date()})
-                    })
-                
-                    batch.commit().then(() => {
-                        console.log('%c Batch completed', 'color: orange;font-weight: bold')
-                        console.table(playlistRef)
-                        this.importTracksToPlaylist(this.state.user.uid, playlistRef.id, tracks.map(track => track.uri), 0)
+                    this.addMultipleTracks(tracks)
                         .then(()=>{
-                            console.log('%c Imported Tracks', 'color: orange;font-weight: bold')
-                            console.table(playlistRef)
-                            resolve(playlistRef)
+                            this.importTracksToPlaylist(this.state.user.uid, playlistRef.id, tracks.map(track => track.uri), 0)
+                            .then(()=>resolve(playlistRef))
+                            .catch(err => {
+                                console.log(err)
+                                reject(err)
+                            })
                         })
-                        .catch((err) => reject(err))
-                    })
-              
-                    .catch(err => {
-                        console.log(err)
-                        reject(err)
-                    })
-                
                 })
                 .catch(err => {                                                         
                     if(err.status === 401){
@@ -354,10 +346,16 @@ class App extends Component {
         page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} 
                             user={user} setRoomCode={this.setRoomCode}/>
     else if(currentPage === 'dashboard') 
-        page = <Dashboard user={user} firebase={this.props.firebase} playlistRef={playlistRef} 
-                changePage={this.changePage} apiRef={spotifyApi} dbRef={this.props.dbRef} tracks={queue}
-                roomCode={this.state.roomRef} accessToken={this.state.token} 
-                updateToken={this.refreshAccessToken} type={sessionType} settings={this.state.settings}/>
+        page = <Dashboard user={user} firebase={this.props.firebase} 
+                playlistRef={playlistRef} 
+                changePage={this.changePage} apiRef={spotifyApi} 
+                dbRef={this.props.dbRef} tracks={queue} 
+                addMultipleTracks={this.addMultipleTracks}
+                importTracksToPlaylist={this.importTracksToPlaylist}
+                roomCode={this.state.roomRef} 
+                accessToken={this.state.token} 
+                updateToken={this.refreshAccessToken} type={sessionType} 
+                settings={this.state.settings}/>
     else if(currentPage === 'trackImport') 
         page = <ImportTrack roomCode={this.state.roomRef} user={user} apiRef={spotifyApi}
                 roomCode={this.state.roomRef} changePage={this.changePage}

@@ -43,7 +43,6 @@ class List extends Component {
     componentDidUpdate = (prevProps, prevState) => {
 
         if (prevState.selected.length !== 0){
-            console.log({prev: prevProps, next: this.props})
             if (prevProps.type !== this.props.type || prevProps.query !== this.props.query){
                 
                 prevProps.updateTracks(prevState.selected.slice())
@@ -94,9 +93,10 @@ class List extends Component {
                                 {this.props.emptyMessage}
                             </div>
        
-       
+        const id = this.props.dark ? 'list-dark' : 
+                   (this.props.small ? 'list-small':'list-no-bg')
         return (
-            <div className='list-container' id={this.props.dark ? 'list-dark': 'list-no-bg'}>
+            <div className='list-container' id={id}>
                 {list === null ? emptyMessage : list}
                 {itemsToShow !== -1 && <div className='list-showmore' id='list-showmore-button'
                                 onClick={this.handleShowMore}>Show More</div>}

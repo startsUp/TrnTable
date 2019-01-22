@@ -11,7 +11,7 @@ import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
 import {ReactComponent as SettingsIcon} from '../res/images/dashboard-settings.svg'
 import {ReactComponent as CloseIcon} from '../res/images/dashboard-close.svg'
 import {ReactComponent as GuestsIcon} from '../res/images/dashboard-group.svg'
-import { parseData, hostListeners, guestListeners, getGuests, getRequests } from '../functions'
+import { parseData, hostListeners, guestListeners, getGuests, getRequests, isAlreadyInQueue } from '../functions'
 // const Track = props => (
 //     // url, albumArt.url, albumName, artists
 //     <div className='track-card-container'>
@@ -48,7 +48,6 @@ class Dashboard extends Component {
     constructor(props){
         super(props)
 
-        console.log({props: this.props})
         if(this.props.type === 'host')
             this.spotifyPlayer = React.createRef()
         this.state = {
@@ -62,8 +61,10 @@ class Dashboard extends Component {
             view: 'normal',
             guests: [],
             requests: [],
-            settings: this.props.settings
-            }
+            settings: this.props.settings,
+            tracksToAdd: [],
+            tracksToAddQueue: [],
+        }
     }
     
  
@@ -88,7 +89,6 @@ class Dashboard extends Component {
     }
 
     initialzie = async (type, dbRef, roomCode) => {
-        console.log(type)
         if(type ==='host'){
             var guests = await getGuests(dbRef, roomCode)
             var requests = await getRequests(dbRef, roomCode)
@@ -103,7 +103,6 @@ class Dashboard extends Component {
     }
     handleNewData = (type, data) => { 
         const {guests, requests} = this.state
-        console.log(data)
         if(type === 'guest')
             this.setState({guests: [...guests, data]})
         else if(type === 'request')
@@ -114,23 +113,16 @@ class Dashboard extends Component {
         
     }
 
-    show = (option) => {
+    show = async (option) => { 
         const {sidebar}=this.state
         this.setState({sidebar: {...sidebar, view: option}})
+        this.updateTracksToAdd()
     }
 
-    displayResults = (query, data) => {
-        
+    displayResults = async (query, data) => {
+        await this.updateTracksToAdd()
         const tracks = parseData('songs', data.tracks)
-        const playlists = parseData('playlist', data.playlists)
-        const albums = parseData('albums', data.albums)
-        const artists = parseData('artists', data.artists)
-
-        
-        this.setState({search: {tracks: tracks, 
-                                playlists: playlists, 
-                                albums: albums, 
-                                artists: artists}})
+        this.setState({search: {query: query, tracks: tracks}})
     }
     playSong = (uri) => {
         this.spotifyPlayer.current.startPlaylistPlayback({uri: uri})
@@ -168,7 +160,6 @@ class Dashboard extends Component {
         if (settings[0].value){
             this.deletePlaylist()
         } 
-        console.log(roomCode)
         this.props.dbRef.collection('users').doc(this.props.user.uid).delete()
         this.props.dbRef.collection('rooms').doc(roomCode).delete()
             .catch(err=>console.log(err))
@@ -177,9 +168,46 @@ class Dashboard extends Component {
 
         this.props.changePage('sessionType')
     }
-    getTracks = () => {
-        return this.props.dbRef.collection('tracksInRoom').doc(this.props.roomCode).collection('tracks').get()
+    
+    handleTrackAdd = (indexes) => {
+        this.setState({tracksToAdd: indexes})
     }
+    updateTracksInDB = async () => {
+        const {tracksToAddQueue, tracks} = this.state
+        await this.props.addMultipleTracks(tracksToAddQueue)
+        const trackURIs = tracksToAddQueue.map(track => track.uri)
+        await this.props.importTracksToPlaylist(this.props.user.uid, 
+                            this.props.playlistRef.id, trackURIs, 0)
+        
+        this.setState({tracks: [...tracks, ...tracksToAddQueue.slice()], tracksToAddQueue: [], tracksToAdd:[]})
+        
+    }
+    updateTracksToAdd = async () => {
+        return new Promise(async (resolve, reject)=> {
+            const {tracksToAdd, sidebar, search} = this.state
+                 //change view if show argument is true
+            if (tracksToAdd.length === 0){
+                resolve(0)
+                return
+            }
+            await this.copySelectedTracksToQueue(search.tracks, tracksToAdd)
+            await this.updateTracksInDB()
+            resolve(0)
+        })
+		
+    }
+    copySelectedTracksToQueue = async (allTracks,selectedTracks) => {
+        var queue = []
+        var updated = this.state.tracksToAddQueue.slice()
+        allTracks.forEach((track, indexVal) =>{
+            if(selectedTracks.indexOf(indexVal) !== -1){
+                if(!isAlreadyInQueue(track))
+                    queue.push(Object.assign(track))
+            }
+        })
+        updated.push(...queue)
+        await this.setState({tracksToAddQueue: updated})
+	}
 
     toggleSidebar = () => {
         const { show, view } = this.state.sidebar
@@ -203,7 +231,6 @@ class Dashboard extends Component {
                 updateToken, 
                 accessToken } = this.props
         
-        
         const hostBarIcon = settingsView ? <CloseIcon className='dash-logo' onClick={this.toggleSettings}/> : 
                                            <SettingsIcon className='dash-logo' id='settings-logo' onClick={this.toggleSettings}/>
         const guestsIcon = <div className='dashboard-roominfo' id='guest-logo'>
@@ -212,8 +239,8 @@ class Dashboard extends Component {
                            </div>
         const options = host ?
                             [{name: 'Queue'},
-                             {name: 'Requests'},
-                             {name: 'Add Tracks'}] :
+                             {name: 'Song Requests'},
+                             {name: 'Add Songs'}] :
                             [{name: 'Request Tracks'}]
         return (
             <div className={host ? 'dashboard-container' : 'dashboard-guest-container'}>
@@ -236,9 +263,10 @@ class Dashboard extends Component {
                                         view={sidebar.view} 
                                         options={options} 
                                         onSearchResults={this.displayResults}
-                                        searchRes={sidebar.view === 'Add Tracks' && search}
+                                        searchRes={sidebar.view === 'Add Songs' && search}
                                         show={this.show}
                                         onPlay={this.playSong}
+                                        updateTracks={this.handleTrackAdd}
                                         apiRef={apiRef}/>
                 }
                 </div>

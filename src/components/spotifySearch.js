@@ -16,11 +16,14 @@ class SpotifySearch extends Component {
     }
 
     getSearchResults = (query) => {
-        const spotifyApi = this.props.apiRef
+        const {apiRef, songsOnly } = this.props
 
-        spotifyApi.search(query, ['track', 'album', 'playlist', 'artist'])
+        var searchType = ['track', 'album', 'playlist', 'artist']
+        if (songsOnly)
+            searchType = ['track']
+        apiRef.search(query, searchType)
                    .then((res)=> {
-                       document.getElementById('spotify-search-input').value = ""
+                        document.getElementById('spotify-search-input').value = ""
                         this.props.onSearchResults(query, res)
                     })
                     .catch(err => {

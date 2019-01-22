@@ -4,6 +4,9 @@ import List from './list'
 
 class SpotifySearchResults extends Component {
 
+    componentWillUnmount = () => {
+        console.log('SEARCH UNMOUNTING')
+    }
     render(){
         var emptyMessage = 'No results'
         const { tracks, albums, playlists, artists, query } = this.props.data
@@ -13,20 +16,25 @@ class SpotifySearchResults extends Component {
                     <div className='search-result-title'>Songs</div>
                     <List selectable  id='search-result-songs' emptyMessage={emptyMessage} 
                          items={tracks} query={query}
-                        type='songs'  itemsToShow={3} {...this.props}/>
+                        type='songs'  itemsToShow={this.props.songsOnly ? 5:3} {...this.props}/>
                 </div>
+                {!this.props.songsOnly &&
                 <div className='result-container'>
                     <div className='search-result-title'>Albums</div>
                     <List id='search-result-albums' emptyMessage={emptyMessage} 
                          items={albums} query={query}
                         type='albums' itemsToShow={3} {...this.props}/>
                 </div>
+                }
+                {!this.props.songsOnly &&
                 <div className='result-container'>
                     <div className='search-result-title'>Playlists</div>
                     <List id='search-result-playlist' emptyMessage={emptyMessage} 
                           items={playlists} query={query}
                         type='playlist'  itemsToShow={3} {...this.props}/>
                 </div>
+                }
+               
                 {/* <div className='result-container'>
                     <div className='search-result-title'>Artists</div>
                     <List  id='search-result-artists' emptyMessage={emptyMessage} 

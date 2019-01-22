@@ -184,3 +184,12 @@ export const getViewDescription = (view, playlist, album) => {
     }
     return desc
 } 
+
+
+export const isAlreadyInQueue = (queue, track) => {
+    for (let i = 0; i < queue.length; i++) {
+        if(queue[i].id === track.id)
+            return true
+    }
+    return false
+}
