@@ -1,3 +1,3 @@
-# <img width="24" height="24" src="./src/res/images/logo-svg.svg"> TrnTable 
+# <img width="32" height="32" src="./src/res/images/logo-svg.svg"> TrnTable 
 
 
