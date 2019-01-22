@@ -127,7 +127,42 @@ export const hostListeners = (dbRef, roomCode, initTimestamp, callback) => {
 }
 
 export const guestListeners = (dbRef, roomCode, initTimestamp, callback) => {
-    
+    var requests = dbRef.collection('tracksInRoom').doc(roomCode).collection('requested').orderBy('timeAdded').startAt(initTimestamp)
+                .onSnapshot((snapshot) => {
+                    console.log(snapshot)
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") {
+                            var doc = change.doc
+                            let source = doc.metadata.hasPendingWrites ? 'Local' : 'Server'
+                            if (source === 'Server') {
+                                callback('request', doc.data())
+                            } else {
+                            // Do nothing, it's a local update so ignore it
+                            }
+                            
+                        }   
+                    })
+                })
+    var users = dbRef.collection('rooms').doc(roomCode).collection('users').orderBy('timeJoined').startAt(initTimestamp)
+                    .onSnapshot((snapshot) => {
+                        console.log(snapshot)
+                        snapshot.docChanges().forEach((change) => {
+                            if (change.type === "added") {
+                                var doc = change.doc
+                                let source = doc.metadata.hasPendingWrites ? 'Local' : 'Server'
+                                if (source === 'Server') {
+                                    //update local queueStat
+                                    callback('guest', doc.data())
+                                    
+                                } else {
+                                // Do nothing, it's a local update so ignore it
+                                }
+                                
+                            }   
+                        })
+                    })
+
+    return [{unsubscribe: requests}, {unsubscribe:users}]
 }
 
 export const getGuests = async (dbRef, roomCode) => {
@@ -192,4 +227,31 @@ export const isAlreadyInQueue = (queue, track) => {
             return true
     }
     return false
+}
+
+export const updateVote = (dbRef, roomCode, vote) => {
+    
+    var nowPlayingRef = dbRef.collection('nowPlaying').doc(roomCode)
+
+    dbRef.runTransaction((transaction) => {
+        return transaction.get(nowPlayingRef).then((nowPlayingDoc) => {
+            if (!nowPlayingDoc.exists) {
+                throw "Document does not exist!";
+            }
+            var updatedLikes = nowPlayingDoc.data().likes + (vote.like? 1:0)
+            var updatedDislikes = nowPlayingDoc.data().dislikes + (vote.dislike? 1:0);
+
+            if (updatedDislikes <= 1000000 || updatedLikes <= 1000000) {
+                transaction.update(nowPlayingDoc, { updatedLikes: updatedLikes, 
+                                                updatedDislikes: updatedDislikes })
+                return [updatedLikes, updatedDislikes]
+            } else {
+                return Promise.reject("Sorry! Votes exceeded.")
+            }
+        })
+        }).then((votes)=> {
+            console.log({votes: votes})
+        }).catch((err) =>{
+            console.error(err)
+        })
 }

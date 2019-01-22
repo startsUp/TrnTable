@@ -52,10 +52,12 @@ class App extends Component {
             firebaseToken: firebaseToken,
             refreshToken: refreshToken,
             queue: [], 
+            requests: [],
+            guests: [],
             sessionType: sessionType,
             loading: '',
             playlistRef: null,
-            settings: DefaultHostSettings   
+            settings: DefaultHostSettings 
         }
       
     }
@@ -99,18 +101,23 @@ class App extends Component {
             this.setState({page: this.state.landingPage})
             return
         }
+      
         const roomInfo = await this.getRoomInfo(res.room)
-        console.log({ROOMINFO: roomInfo})
         if (res.playlistRef){
 
             var tracks = await this.getSessionTracks(res.room)
+            var requests = await this.getSessionTracks(res.room, 'requested')
+            var guests = await this.getGuests(res.room)
+            console.log(guests)
             this.setState({
                 page: 'dashboard',
                 playlistRef: res.playlistRef,
                 roomRef: res.room,
                 sessionType: res.host ? 'host' : 'guest',
                 queue: tracks,
-                settings: roomInfo.settings
+                requests: requests,
+                settings: roomInfo.settings,
+                guests: guests
             })
         }
         else if(res.host){
@@ -122,13 +129,32 @@ class App extends Component {
             })
         }
         else{
+            var tracks = await this.getSessionTracks(res.room)
+            var requests = await this.getSessionTracks(res.room, 'requested')
+            var guests = await this.getGuests(res.room)
             this.setState({
                 page: 'dashboard',
                 roomRef: res.room,
                 sessionType: 'guest',
-                settings: roomInfo.settings
+                settings: roomInfo.settings,
+                queue: tracks,
+                requests: requests,
+                guests: guests
             })
         }
+    }
+    getGuests = async (roomCode) => {
+        return new Promise((resolve, reject) => {
+            this.props.dbRef.collection('rooms').doc(roomCode).collection('users').get()
+            .then((snapshots) => {
+                if(snapshots.empty)
+                    resolve(false)
+                else
+                    resolve(snapshots.docs.map((doc) => doc.data()))
+            })
+            .catch(err => reject(err))
+        })
+        
     }
     getRoomInfo = async (roomCode) => {
         return new Promise((resolve, reject) => {
@@ -164,9 +190,9 @@ class App extends Component {
         })
     }
 
-    getSessionTracks = async (roomCode) => {
+    getSessionTracks = async (roomCode, type='tracks') => {
         return new Promise((resolve, reject) => {
-            this.props.dbRef.collection('tracksInRoom').doc(roomCode).collection('tracks').orderBy('timeAdded').get()
+            this.props.dbRef.collection('tracksInRoom').doc(roomCode).collection(type).orderBy('timeAdded').get()
                 .then((snapshots) => {
                     console.log(snapshots)
                     if(snapshots.empty)
@@ -273,9 +299,18 @@ class App extends Component {
         await this.setState({queue: tracks})
     }
     setRoomCode = async (roomCode, isHost) => {
+       
         await this.setState({roomRef: roomCode})
         var roomInfo = {host: isHost, room: roomCode}
+        
         this.props.dbRef.collection('users').doc(this.state.user.uid).set(roomInfo)
+        if (!isHost){
+            this.props.dbRef.collection('rooms')
+                    .doc(roomCode)
+                    .collection('users')
+                    .doc(this.state.user.uid)
+                    .set({joinedTimestamp: new Date(), name: this.state.user.displayName})
+        }
     }
 
     addMultipleTracks = async (tracks, playlist) => {
@@ -283,8 +318,8 @@ class App extends Component {
             var batch = this.props.dbRef.batch()
             var room = this.props.dbRef.collection('rooms').doc(this.state.roomRef)
             var user = this.props.dbRef.collection('users').doc(this.state.user.uid)
-            batch.set(user, {playlistRef: playlist})
-            batch.set(room, {playlistRef: playlist})
+            batch.update(user, {playlistRef: playlist})
+            batch.update(room, {playlistRef: playlist})
 
             tracks.forEach((track) => { 
                 //generate unique track id
@@ -345,7 +380,7 @@ class App extends Component {
 
     var page = <LoadingScreen message={this.state.loading}/>
     const currentPage = this.state.page
-    const { user, sessionType, queue, playlistRef } = this.state
+    const { user, sessionType, queue, playlistRef, requests, guests} = this.state
     if(currentPage === 'sessionType') 
         page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} 
                             getSessionTracks={this.getSessionTracks}
@@ -353,7 +388,9 @@ class App extends Component {
                             user={user} setRoomCode={this.setRoomCode}/>
     else if(currentPage === 'dashboard') 
         page = <Dashboard user={user} firebase={this.props.firebase} 
-                playlistRef={playlistRef} 
+                playlistRef={playlistRef}
+                requests={requests} 
+                guests={guests}
                 changePage={this.changePage} apiRef={spotifyApi} 
                 dbRef={this.props.dbRef} tracks={queue} 
                 addMultipleTracks={this.addMultipleTracks}

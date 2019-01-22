@@ -12,7 +12,7 @@ const DashboardSidebar = props => (
         <div className='options-container'>
         {props.view !== 'Home' && <div className='sidebar-context-title'>{props.view}</div>}
         {props.view === 'Queue' && 
-                <List dark play selectable emptyMessage='No Songs in Queue' 
+                <List dark play={props.host} selectable={props.host} emptyMessage='No Songs in Queue' 
                       items={props.list}
                       contentClick={props.contentClick}
                       onPlay={props.onPlay}/>
@@ -23,7 +23,7 @@ const DashboardSidebar = props => (
                       contentClick={props.contentClick}
                       />
         }
-        {props.view === 'Add Songs' &&
+        {(props.view === 'Add Songs' || props.view === 'Request Songs') &&
             <SpotifySearch songsOnly center padded apiRef={props.apiRef} onSearchResults={props.onSearchResults}/>
         }
         {props.searchRes && <SpotifySearchResults songsOnly small query={props.searchRes.query} data={props.searchRes} {...props}/>}

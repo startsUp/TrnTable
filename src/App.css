@@ -81,10 +81,6 @@ font-size: 1.35rem;
 padding: 2em; 
 color: white;
 }
-#menu-icon, #list-icon, #list-icon-added:hover{
-    fill: white;
-    cursor: pointer;
-}
 
 #icon-active{
     transform: rotate(90deg);
@@ -150,7 +146,7 @@ cursor: pointer;
 .spotify-player-container{
     display: grid;
     justify-content: center;
-    padding: 2em;
+    padding: 2em 2em 4em 2em;
 }
 .player-icon{
 fill: #1ED660;
@@ -172,9 +168,43 @@ border: 2px solid #1ED660;
 fill: white;
 cursor: pointer;
 border: 2px solid white;
+}
+.vote-icon{
+height: 3rem;
+width: 3rem;
+stroke: #1ED660;
+fill: rgba(0,0,0,0);
+}
+.vote-icon:hover{
+    height: 3rem;
+    width: 3rem;
+    stroke: #1ED660;
+    fill: #1ED660;
+    cursor: pointer;
+}
+.vote-icon-host{
+    height: 1.2em;
+    width: 1.2em;
+    fill: #1ED660;
+    padding: 0 0.2em;
+}
+.votes-host{
+    color: #1ED660;
+    font-size: 1.5em;
+    font-family: 'sofia_problack';
+    display: inline-flex;
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin: 2.4em 0.5em;
+    background: rgba(25, 20, 20, 0.8);
+    padding: 0.2em 0.4em;
+    border-radius: 0.5em;
 
 }
-
+#vote-select{
+    fill: #1ED660;
+}
 #play{
 height: 5rem;
 width: 5rem;
@@ -187,6 +217,11 @@ width: 5rem;
 display: grid;
 grid-template-columns: 1fr 1fr 1fr;
 align-items: center;
+padding-bottom: 2em;
+}
+#guest-controls-container{
+    grid-template-columns: 1fr 1fr;
+    padding-bottom: 3em;
 }
 .track-container{
     font-family: 'sofia_problack';
@@ -724,7 +759,7 @@ color: black;
     width:  2.2em;
     margin: auto 0;
 }
-.import-icons:hover, #start-logo:hover, .dash-logo:hover, .home-icon:hover{
+.import-icons:hover, #start-logo:hover, .dash-logo:hover, .home-icon:hover, #menu-icon, #list-icon, #list-icon-added:hover{
     fill: white;
     cursor: pointer;
 }

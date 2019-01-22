@@ -10,7 +10,7 @@ class SpotifyPlayer extends Component {
 constructor(props) {
     super(props)
 
-    console.log(this.props.playlistRef)
+    
     var artURL = placeholderArt
     var albumName = ""
     var trackName = "" 
@@ -285,14 +285,17 @@ render() {
         {error && <ConfirmActionPopup 
                     popupInfo={popup}/>
         }
+         {this.props.votes}
             <img src={track.artURL} className='track-art'/>
             <CurrentTrack track={track}/>
+           
             <ProgressBar
                 isEnabled
                 direction= {Direction.HORIZONTAL}
                 value={value}
                 updateProgress={this.seek}
                 />
+
             <PlayerControls 
                 togglePlay={this.onPlayClick} 
                 next={this.onNextClick}
@@ -300,6 +303,7 @@ render() {
                 playing={playing}
                 votingEnabled={false}
             />
+            
     </div>
     )
 }

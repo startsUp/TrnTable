@@ -11,7 +11,8 @@ import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
 import {ReactComponent as SettingsIcon} from '../res/images/dashboard-settings.svg'
 import {ReactComponent as CloseIcon} from '../res/images/dashboard-close.svg'
 import {ReactComponent as GuestsIcon} from '../res/images/dashboard-group.svg'
-import { parseData, hostListeners, guestListeners, getGuests, getRequests, isAlreadyInQueue } from '../functions'
+import { parseData, hostListeners, guestListeners, isAlreadyInQueue, updateVote } from '../functions'
+import {ReactComponent as LikeIcon} from '../res/images/player-like.svg'
 // const Track = props => (
 //     // url, albumArt.url, albumName, artists
 //     <div className='track-card-container'>
@@ -59,11 +60,12 @@ class Dashboard extends Component {
             settingsView: false,
             sidebar: {show: false, view: 'Home'},
             view: 'normal',
-            guests: [],
+            guests: this.props.guests,
             requests: [],
             settings: this.props.settings,
             tracksToAdd: [],
             tracksToAddQueue: [],
+            votes: {likes:53, dislike: 10}
         }
     }
     
@@ -73,7 +75,7 @@ class Dashboard extends Component {
 
 
         const {type, dbRef, roomCode} = this.props
-        this.initialzie(type, dbRef, roomCode)  //fetch necessary data
+        
 
         //setup listeners
         var listeners = []
@@ -88,13 +90,10 @@ class Dashboard extends Component {
     
     }
 
-    initialzie = async (type, dbRef, roomCode) => {
-        if(type ==='host'){
-            var guests = await getGuests(dbRef, roomCode)
-            var requests = await getRequests(dbRef, roomCode)
-            this.setState({guests: guests, requests: requests})
-        }
+    onVote = async (vote) => {
+        updateVote(this.props.dbRef, this.props.roomCode, vote)
     }
+
     componentWillUnmount = () => {
         // unsubscribe
         this.state.listeners.forEach(listener => {
@@ -223,6 +222,7 @@ class Dashboard extends Component {
                 tracks, 
                 sidebar,
                 search,
+                votes,
                 requests,
                 settings } = this.state
         const { roomCode, 
@@ -230,24 +230,37 @@ class Dashboard extends Component {
                 apiRef, 
                 updateToken, 
                 accessToken } = this.props
-        
+        console.log(guests)
         const hostBarIcon = settingsView ? <CloseIcon className='dash-logo' onClick={this.toggleSettings}/> : 
                                            <SettingsIcon className='dash-logo' id='settings-logo' onClick={this.toggleSettings}/>
         const guestsIcon = <div className='dashboard-roominfo' id='guest-logo'>
                                 <div id='host-roomcode'>{guests.length}</div>
                                 <GuestsIcon className='dash-logo'/>
                            </div>
+        const voteIcons = host &&
+            <div className='votes-host'>
+                {votes.dislike}
+                <LikeIcon className='vote-icon-host' style={{'transform': 'rotate(180deg)'}}/>
+                <LikeIcon className='vote-icon-host'/>
+                {votes.likes}
+            </div>
+            
         const options = host ?
                             [{name: 'Queue'},
                              {name: 'Song Requests'},
                              {name: 'Add Songs'}] :
-                            [{name: 'Request Tracks'}]
+                            [{name: 'Queue'},
+                            {name: 'Song Requests'},
+                            {name: 'Request Songs'}]
+        const searchShow = sidebar.view === 'Add Songs' || sidebar.view === 'Request Songs'
         return (
-            <div className={host ? 'dashboard-container' : 'dashboard-guest-container'}>
+            <div className='dashboard-container'>
                 <HostBar dark={settingsView} roomCode={roomCode} 
                             title={ host ? ` ${user.displayName}'s Session` :
                                 'TrnTable Session'}
                             icon={hostBarIcon}
+                            host={host}
+
                             guestsIcon={guestsIcon}
                             onClick={() => this.setState({settingsView: !this.state.settingsView})}
                 />
@@ -259,11 +272,12 @@ class Dashboard extends Component {
                 }
                 <div className='sidebar-container'>
                 {sidebar.show && <DashboardSidebar 
+                                        host={host}
                                         list={sidebar.view === 'Queue' ? tracks : requests} 
                                         view={sidebar.view} 
                                         options={options} 
                                         onSearchResults={this.displayResults}
-                                        searchRes={sidebar.view === 'Add Songs' && search}
+                                        searchRes={searchShow && search}
                                         show={this.show}
                                         onPlay={this.playSong}
                                         updateTracks={this.handleTrackAdd}
@@ -277,10 +291,11 @@ class Dashboard extends Component {
                     {host ?
                         <SpotifyPlayer ref={this.spotifyPlayer} apiRef={apiRef} user={user} tracks={this.props.tracks} stopSession={this.stopSession}
                             accessToken={accessToken} updateToken={updateToken} playlistRef={this.props.playlistRef}
+                            votes={voteIcons}
                             updateCurrentTrack={this.updateCurrentTrack}/>
                         :
-                        <GuestPlayer apiRef={apiRef} user={user} 
-                            accessToken={accessToken} updateToken={updateToken}/>
+                        <GuestPlayer apiRef={apiRef} user={user} tracks={this.props.tracks}
+                            accessToken={accessToken} updateToken={updateToken} vote={this.onVote}/>
                     }
                 </div>    
             </div> 

@@ -114,7 +114,7 @@ class SessionType extends Component {
                     .doc(roomCode)
                     .collection('users')
                     .doc(this.props.user.uid)
-                    .set({joinedTimestamp: new Date()})
+                    .set({joinedTimestamp: new Date(), name: this.props.user.displayName})
             
         })
 
@@ -147,18 +147,21 @@ class SessionType extends Component {
 
 
     
-    enterRoom = async (roomCode) => {
+    enterRoom = async (room) => {
         
 
         // check if the room exists 
 
         if(this.state.sessionType === 'host'){
-            this.props.setRoomCode(this.state.roomCode, true)
-            this.props.changePage('trackImport')
+            if (this.state.roomCode){
+                this.props.setRoomCode(this.state.roomCode, true)
+                this.props.changePage('trackImport')
+            }
         }
             
         else
         {
+            var roomCode = room.toUpperCase()
   
             //validate with database
             this.getRoom(roomCode)
