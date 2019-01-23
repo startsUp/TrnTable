@@ -118,13 +118,18 @@ class Dashboard extends Component {
     }
     handleNewData = (type, data) => { 
 
-        const {guests, requests} = this.state
+        const {guests, requests, tracks} = this.state
+        
         if(type === 'guest')
             this.setState({guests: [...guests, data]})
         else if(type === 'request')
             this.setState({requests: [...requests, data]})
         else if(type === 'votes')
             this.setState({votes: data})
+        else if(type === 'queue')
+            this.setState({tracks: [...tracks, data.track]})
+        else if(type === 'request')
+            this.setState({requests: [...requests, data.track]})
         else if(type === 'nowPlaying'){
             this.checkOffset = window.setInterval(()=>this.setOffset(data), 2000)
         }

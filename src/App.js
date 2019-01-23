@@ -322,13 +322,16 @@ class App extends Component {
         }
     }
 
-    addMultipleTracks = async (tracks, playlist) => {
+    addMultipleTracks = async (tracks, playlist=null) => {
         return new Promise((resolve, reject) => {
             var batch = this.props.dbRef.batch()
-            var room = this.props.dbRef.collection('rooms').doc(this.state.roomRef)
-            var user = this.props.dbRef.collection('users').doc(this.state.user.uid)
-            batch.update(user, {playlistRef: playlist})
-            batch.update(room, {playlistRef: playlist})
+            if(playlist){
+                var room = this.props.dbRef.collection('rooms').doc(this.state.roomRef)
+                var user = this.props.dbRef.collection('users').doc(this.state.user.uid)
+                batch.update(user, {playlistRef: playlist})
+                batch.update(room, {playlistRef: playlist})
+            }
+
 
             tracks.forEach((track) => { 
                 //generate unique track id

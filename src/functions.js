@@ -171,6 +171,26 @@ export const guestListeners = (dbRef, roomCode, initTimestamp, callback) => {
                         })
                     })
 
+    var queue = dbRef.collection('tracksInRoom').doc(roomCode).collection('tracks').orderBy('timeAdded').startAt(initTimestamp)
+        .onSnapshot((snapshot) => {
+            console.log(snapshot)
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    var doc = change.doc
+                    let source = doc.metadata.hasPendingWrites ? 'Local' : 'Server'
+                    if (source === 'Server') {
+                        //update local queueStat
+                        callback('queue', doc.data())
+                        
+                    } else {
+                    // Do nothing, it's a local update so ignore it
+                    }
+                    
+                }   
+            })
+        })
+
+
     var nowPlaying = dbRef.collection('nowPlaying').doc(roomCode)
                     .onSnapshot((doc) => {
                         
@@ -180,7 +200,7 @@ export const guestListeners = (dbRef, roomCode, initTimestamp, callback) => {
                         }
                     })
 
-    return [{unsubscribe: requests}, {unsubscribe:users}, {unsubscribe: nowPlaying}]
+    return [{unsubscribe: requests}, {unsubscribe:users}, {unsubscribe: queue}, {unsubscribe: nowPlaying}]
 }
 
 export const getGuests = async (dbRef, roomCode) => {
