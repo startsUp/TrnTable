@@ -49,6 +49,7 @@ class Dashboard extends Component {
     constructor(props){
         super(props)
 
+        
         if(this.props.type === 'host')
             this.spotifyPlayer = React.createRef()
         this.state = {
@@ -65,7 +66,7 @@ class Dashboard extends Component {
             settings: this.props.settings,
             tracksToAdd: [],
             tracksToAddQueue: [],
-            votes: {likes:53, dislike: 10}
+            votes: {likes:0, dislikes: 0}
         }
     }
     
@@ -80,6 +81,8 @@ class Dashboard extends Component {
         //setup listeners
         var listeners = []
         if(type === 'host'){
+            this.updateVotes(roomCode)
+
             listeners = hostListeners(dbRef, roomCode, new Date(), this.handleNewData)
         }
         else {
@@ -89,9 +92,20 @@ class Dashboard extends Component {
         
     
     }
+    updateVotes = (roomCode) => {
+        this.props.dbRef.collection('nowPlaying').doc(roomCode).get()
+            .then((snapshot) =>{
+                console.log(snapshot)
+                if(snapshot.exits){
+                    var data = snapshot.document.data()
+                    this.setState({votes: data.votes})
+                }
 
-    onVote = async (vote) => {
-        updateVote(this.props.dbRef, this.props.roomCode, vote)
+            })
+    }
+
+    onVote = async (vote, update=false) => {
+        updateVote(this.props.dbRef, this.props.roomCode, vote, update)
     }
 
     componentWillUnmount = () => {
@@ -99,17 +113,24 @@ class Dashboard extends Component {
         this.state.listeners.forEach(listener => {
             listener.unsubscribe()
         })
+    
     }
     handleNewData = (type, data) => { 
+
         const {guests, requests} = this.state
         if(type === 'guest')
             this.setState({guests: [...guests, data]})
         else if(type === 'request')
             this.setState({requests: [...requests, data]})
+        else if(type === 'votes')
+            this.setState({votes: data})
      
     }
-    updateCurrentTrack = () => {
-        
+    updateCurrentTrack = (trackID) => {
+        this.props.dbRef.collection('nowPlaying').doc(this.props.roomCode).set({
+            trackID: trackID,
+            votes: {likes: 0, dislikes: 0}
+        })
     }
 
     show = async (option) => { 
@@ -230,7 +251,7 @@ class Dashboard extends Component {
                 apiRef, 
                 updateToken, 
                 accessToken } = this.props
-        console.log(guests)
+     
         const hostBarIcon = settingsView ? <CloseIcon className='dash-logo' onClick={this.toggleSettings}/> : 
                                            <SettingsIcon className='dash-logo' id='settings-logo' onClick={this.toggleSettings}/>
         const guestsIcon = <div className='dashboard-roominfo' id='guest-logo'>
@@ -239,7 +260,7 @@ class Dashboard extends Component {
                            </div>
         const voteIcons = host &&
             <div className='votes-host'>
-                {votes.dislike}
+                {votes.dislikes}
                 <LikeIcon className='vote-icon-host' style={{'transform': 'rotate(180deg)'}}/>
                 <LikeIcon className='vote-icon-host'/>
                 {votes.likes}
@@ -253,6 +274,7 @@ class Dashboard extends Component {
                             {name: 'Song Requests'},
                             {name: 'Request Songs'}]
         const searchShow = sidebar.view === 'Add Songs' || sidebar.view === 'Request Songs'
+        
         return (
             <div className='dashboard-container'>
                 <HostBar dark={settingsView} roomCode={roomCode} 
@@ -294,7 +316,7 @@ class Dashboard extends Component {
                             votes={voteIcons}
                             updateCurrentTrack={this.updateCurrentTrack}/>
                         :
-                        <GuestPlayer apiRef={apiRef} user={user} tracks={this.props.tracks}
+                        <GuestPlayer apiRef={apiRef} user={user} track={this.props.tracks[0]}
                             accessToken={accessToken} updateToken={updateToken} vote={this.onVote}/>
                     }
                 </div>    

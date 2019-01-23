@@ -11,17 +11,18 @@ class PlayerControls extends Component {
             vote: {like: false, dislike: false}
         }
     }
-    handleVote = (vote) => {
+    handleVote = async (vote) => {
         const {vote:currentVote} = this.state
         const updatedVotes = {like: !currentVote.like && vote, 
             dislike: !currentVote.dislike && !vote}
+            
+        this.props.vote(updatedVotes, currentVote)
+        // window.clearTimeout(this.votingTimeout)
+        // this.votingTimeout = window.setTimeout(()=>{
+        //     this.props.vote(updatedVotes, currentVote)
+        // }, 3000)
+        await this.setState({vote:updatedVotes, update: true})
 
-        this.setState({vote:updatedVotes})
-
-        window.clearTimeout(this.votingTimeout)
-        this.votingTimeout = window.setTimeout(()=>{
-            this.props.vote({updatedVotes})
-        }, 3000)
     }
     render(){
         const props = this.props

@@ -94,6 +94,7 @@ class ImportTrack extends Component {
 	}
 	
     componentDidMount = () => {
+        console.log('getting tracks')
         this.getSavedTracks()    
     }
 
@@ -104,6 +105,7 @@ class ImportTrack extends Component {
                             savedSongsOffset:50, totalSavedSongs: data.total})
         })
         .catch(err => {
+            console.log({err: err})
             if(err.status === 401){
                 this.props.updateToken()
                     .then(this.getSavedTracks())

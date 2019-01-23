@@ -104,7 +104,7 @@ export const hostListeners = (dbRef, roomCode, initTimestamp, callback) => {
                         }   
                     })
                 })
-    var users = dbRef.collection('rooms').doc(roomCode).collection('users').orderBy('timeJoined').startAt(initTimestamp)
+    var users = dbRef.collection('rooms').doc(roomCode).collection('users').orderBy('joinedTimestamp').startAt(initTimestamp)
                     .onSnapshot((snapshot) => {
                         console.log(snapshot)
                         snapshot.docChanges().forEach((change) => {
@@ -122,8 +122,17 @@ export const hostListeners = (dbRef, roomCode, initTimestamp, callback) => {
                             }   
                         })
                     })
+    
+    var votes = dbRef.collection('nowPlaying').doc(roomCode)
+                    .onSnapshot((doc) => {
+                        
+                        if(doc.exists){
+                    
+                            callback('votes', doc.data().votes)
+                        }
+                    })
 
-    return [{unsubscribe: requests}, {unsubscribe:users}]
+    return [{unsubscribe: requests}, {unsubscribe:users}, {unsubscribe: votes}]
 }
 
 export const guestListeners = (dbRef, roomCode, initTimestamp, callback) => {
@@ -143,7 +152,7 @@ export const guestListeners = (dbRef, roomCode, initTimestamp, callback) => {
                         }   
                     })
                 })
-    var users = dbRef.collection('rooms').doc(roomCode).collection('users').orderBy('timeJoined').startAt(initTimestamp)
+    var users = dbRef.collection('rooms').doc(roomCode).collection('users').orderBy('joinedTimestamp').startAt(initTimestamp)
                     .onSnapshot((snapshot) => {
                         console.log(snapshot)
                         snapshot.docChanges().forEach((change) => {
@@ -162,7 +171,16 @@ export const guestListeners = (dbRef, roomCode, initTimestamp, callback) => {
                         })
                     })
 
-    return [{unsubscribe: requests}, {unsubscribe:users}]
+    var nowPlaying = dbRef.collection('nowPlaying').doc(roomCode)
+                    .onSnapshot((doc) => {
+                        
+                        if(doc.exists){
+                    
+                            callback('votes', doc.data())
+                        }
+                    })
+
+    return [{unsubscribe: requests}, {unsubscribe:users}, {unsubscribe: nowPlaying}]
 }
 
 export const getGuests = async (dbRef, roomCode) => {
@@ -229,21 +247,23 @@ export const isAlreadyInQueue = (queue, track) => {
     return false
 }
 
-export const updateVote = (dbRef, roomCode, vote) => {
+export const updateVote = (dbRef, roomCode, vote, prevVote) => {
     
     var nowPlayingRef = dbRef.collection('nowPlaying').doc(roomCode)
 
     dbRef.runTransaction((transaction) => {
         return transaction.get(nowPlayingRef).then((nowPlayingDoc) => {
-            if (!nowPlayingDoc.exists) {
+            if (!nowPlayingDoc.exists || !nowPlayingDoc.data().votes) {
                 throw "Document does not exist!";
             }
-            var updatedLikes = nowPlayingDoc.data().likes + (vote.like? 1:0)
-            var updatedDislikes = nowPlayingDoc.data().dislikes + (vote.dislike? 1:0);
+            var like = (vote.like ? 1:(prevVote.like ? -1: 0))
+            var dislike = (vote.dislike ? 1:(prevVote.dislike ? -1: 0))
+            var updatedLikes = nowPlayingDoc.data().votes.likes + like
+            var updatedDislikes = nowPlayingDoc.data().votes.dislikes + dislike;
 
             if (updatedDislikes <= 1000000 || updatedLikes <= 1000000) {
-                transaction.update(nowPlayingDoc, { updatedLikes: updatedLikes, 
-                                                updatedDislikes: updatedDislikes })
+                transaction.update(nowPlayingRef, {votes:{likes: updatedLikes, 
+                                                         dislikes: updatedDislikes}})
                 return [updatedLikes, updatedDislikes]
             } else {
                 return Promise.reject("Sorry! Votes exceeded.")

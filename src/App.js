@@ -108,7 +108,6 @@ class App extends Component {
             var tracks = await this.getSessionTracks(res.room)
             var requests = await this.getSessionTracks(res.room, 'requested')
             var guests = await this.getGuests(res.room)
-            console.log(guests)
             this.setState({
                 page: 'dashboard',
                 playlistRef: res.playlistRef,
@@ -265,14 +264,21 @@ class App extends Component {
                         this.setState({page: 'dashboard', 
                                     sessionType: 'host', 
                                     queue: tracks,
+                                    
                                     playlistRef: playlistRef})}))
                     .catch(err=> console.trace(err))
             }
             else{
                 var roomInfo = await this.getRoomInfo(this.state.roomRef)
+                var roomTracks = await this.getSessionTracks(this.state.roomRef)
+                var requests = await this.getSessionTracks(this.state.roomRef, 'requested')
+                var guests = await this.getGuests(this.state.roomRef)
                 this.setState({page: 'dashboard', 
                                sessionType: 'guest',
                                settings: roomInfo.settings,
+                               guests: guests,
+                               requests: requests,
+                               tracks:roomTracks,
                                playlistRef: roomInfo.playlistRef})
             }
         }  
@@ -297,6 +303,9 @@ class App extends Component {
       
     setQueue = async (tracks) => {
         await this.setState({queue: tracks})
+    }
+    setGuests = async (guests) => {
+        await this.setState({guests: [guests]})
     }
     setRoomCode = async (roomCode, isHost) => {
        
@@ -326,13 +335,21 @@ class App extends Component {
                 var trackRef = this.props.dbRef.collection('tracksInRoom')
                                                .doc(this.state.roomRef)
                                                .collection('tracks').doc()
-                batch.set(trackRef, {track: track, timeAdded: new Date()})
+                var time = new Date()
+                this.waitLoop()
+                batch.set(trackRef, {track: track, timeAdded: time})
             })
             batch.commit().then(() => resolve())
             .catch((err) => reject(err))
         })
     }
 
+    waitLoop = async () => {
+        for (let i = 0; i < 100000; i++) {
+            let doSomething = i * i * i;
+            }
+ 
+    }
     createPlaylist = async (name, tracks) => {
         return new Promise((resolve, reject) => {
             console.log('%c Creating Playlist', 'color: orange;font-weight: bold')
@@ -385,6 +402,7 @@ class App extends Component {
         page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} 
                             getSessionTracks={this.getSessionTracks}
                             setQueue={this.setQueue}
+                            setGuests={this.setGuests}
                             user={user} setRoomCode={this.setRoomCode}/>
     else if(currentPage === 'dashboard') 
         page = <Dashboard user={user} firebase={this.props.firebase} 

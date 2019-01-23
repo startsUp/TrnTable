@@ -19,11 +19,12 @@ constructor(props) {
 
     
     if(this.props.tracks.length > 0){
-        console.log(this.props.tracks[0])
+   
         artURL = this.props.tracks[0].albumArt[1].url
         trackName = this.props.tracks[0].trackName
         albumName = this.props.tracks[0].albumName
         artistName = this.props.tracks[0].artists
+        this.props.updateCurrentTrack(this.props.tracks[0].id)
     }
     this.state = {
         token: this.props.accessToken,
@@ -71,7 +72,7 @@ componentDidMount = () => {
 // when we receive a new update from the player
 onStateChanged(playerState) {
     // only update if we got a real state
-    console.log(playerState)
+   
     if (playerState !== null) {
     const {
         current_track: currentTrack,
@@ -90,8 +91,8 @@ onStateChanged(playerState) {
     if(currentTrack.id === this.state.track.id)
         return
 
-    this.props.updateCurrentTrack()
     
+    this.props.updateCurrentTrack(currentTrack.id)
     if (playing)
         this.handleProgress()
 

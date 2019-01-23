@@ -110,12 +110,13 @@ class SessionType extends Component {
             settings: DefaultHostSettings
         })
         .then((snapshot) => {
+            var userJoin = {joinedTimestamp: new Date(), name: this.props.user.displayName}
             dbRef.collection('rooms')
                     .doc(roomCode)
                     .collection('users')
                     .doc(this.props.user.uid)
                     .set({joinedTimestamp: new Date(), name: this.props.user.displayName})
-            
+            this.props.setGuests(userJoin)
         })
 
     }
