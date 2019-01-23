@@ -11,7 +11,7 @@ import {ReactComponent as MenuIcon} from '../res/images/menu.svg'
 import {ReactComponent as SettingsIcon} from '../res/images/dashboard-settings.svg'
 import {ReactComponent as CloseIcon} from '../res/images/dashboard-close.svg'
 import {ReactComponent as GuestsIcon} from '../res/images/dashboard-group.svg'
-import { parseData, hostListeners, guestListeners, isAlreadyInQueue, updateVote } from '../functions'
+import { parseData, hostListeners, guestListeners, isAlreadyInQueue, updateVote, requestTrack } from '../functions'
 import {ReactComponent as LikeIcon} from '../res/images/player-like.svg'
 // const Track = props => (
 //     // url, albumArt.url, albumName, artists
@@ -119,11 +119,8 @@ class Dashboard extends Component {
     handleNewData = (type, data) => { 
 
         const {guests, requests, tracks} = this.state
-        
         if(type === 'guest')
             this.setState({guests: [...guests, data]})
-        else if(type === 'request')
-            this.setState({requests: [...requests, data]})
         else if(type === 'votes')
             this.setState({votes: data})
         else if(type === 'queue')
@@ -207,18 +204,47 @@ class Dashboard extends Component {
         this.props.changePage('sessionType')
     }
     
+    onRequest = (trackID, track) => {
+        console.log({trackID, track})
+    }
     handleTrackAdd = (indexes) => {
+        console.log(indexes)
         this.setState({tracksToAdd: indexes})
     }
     updateTracksInDB = async () => {
         const {tracksToAddQueue, tracks} = this.state
-        await this.props.addMultipleTracks(tracksToAddQueue)
-        const trackURIs = tracksToAddQueue.map(track => track.uri)
-        await this.props.importTracksToPlaylist(this.props.user.uid, 
-                            this.props.playlistRef.id, trackURIs, 0)
+        if(this.props.type === 'host'){
+            await this.props.addMultipleTracks(tracksToAddQueue)
+            const trackURIs = tracksToAddQueue.map(track => track.uri)
+            await this.props.importTracksToPlaylist(this.props.user.uid, 
+                                this.props.playlistRef.id, trackURIs, 0)
+            
+            this.setState({tracks: [...tracks, ...tracksToAddQueue.slice()], tracksToAddQueue: [], tracksToAdd:[]})
+            
+        }else{
+            //check if songs is already requested in local queue
+            const {requests} = this.state
+            console.log({tracksToAddQueue, requests})
+
+            tracksToAddQueue.forEach(trackToAdd=>{
+                if(requests.length > 0){
+                    requests.forEach((track)=>{
+                        if(track.id !== trackToAdd.id){
+                            requestTrack(this.props.dbRef, this.props.roomCode, trackToAdd)
+                        }
+                    })
+                }
+                else{
+                    requestTrack(this.props.dbRef, this.props.roomCode, trackToAdd)
+                }
+
+            })
+            
+            this.setState({tracksToAddQueue: [], tracksToAdd:[]})
         
-        this.setState({tracks: [...tracks, ...tracksToAddQueue.slice()], tracksToAddQueue: [], tracksToAdd:[]})
-        
+
+        }
+
     }
     updateTracksToAdd = async () => {
         return new Promise(async (resolve, reject)=> {
@@ -270,7 +296,7 @@ class Dashboard extends Component {
                 apiRef, 
                 updateToken, 
                 accessToken } = this.props
-     
+     console.log(requests)
         const hostBarIcon = settingsView ? <CloseIcon className='dash-logo' onClick={this.toggleSettings}/> : 
                                            <SettingsIcon className='dash-logo' id='settings-logo' onClick={this.toggleSettings}/>
         const guestsIcon = <div className='dashboard-roominfo' id='guest-logo'>

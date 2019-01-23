@@ -295,3 +295,25 @@ export const updateVote = (dbRef, roomCode, vote, prevVote) => {
             console.error(err)
         })
 }
+
+export const requestTrack = (dbRef, roomCode, track) => {
+    
+    console.log('request to db')
+    var requestedTracks = dbRef.collection('tracksInRoom').doc(roomCode)
+                                .collection('requested').doc(track.id)
+
+    dbRef.runTransaction((transaction) => {
+        return transaction.get(requestedTracks).then((requestedTrackDoc) => {
+            if (requestedTrackDoc.exists) {
+                throw "Track Already Requested";
+            }
+     
+            transaction.set(requestedTracks, {track: track, timeAdded: new Date()})
+
+        })
+        }).then((votes)=> {
+            console.log({votes: votes})
+        }).catch((err) =>{
+            console.error(err)
+        })
+}
