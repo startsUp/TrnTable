@@ -63,6 +63,7 @@ class Dashboard extends Component {
             view: 'normal',
             guests: this.props.guests,
             requests: [],
+            offset: 0,
             settings: this.props.settings,
             tracksToAdd: [],
             tracksToAddQueue: [],
@@ -124,7 +125,19 @@ class Dashboard extends Component {
             this.setState({requests: [...requests, data]})
         else if(type === 'votes')
             this.setState({votes: data})
+        else if(type === 'nowPlaying'){
+            this.checkOffset = window.setInterval(()=>this.setOffset(data), 2000)
+        }
      
+    }
+    setOffset = (trackID) => {
+
+        this.state.tracks.forEach((track, index)=>{
+            if(track.id === trackID){
+                window.clearInterval(this.checkOffset)
+                this.setState({offset: index})
+            }
+        })
     }
     updateCurrentTrack = (trackID) => {
         this.props.dbRef.collection('nowPlaying').doc(this.props.roomCode).set({
@@ -241,6 +254,7 @@ class Dashboard extends Component {
                 guests, 
                 view, 
                 tracks, 
+                offset,
                 sidebar,
                 search,
                 votes,
@@ -313,10 +327,10 @@ class Dashboard extends Component {
                     {host ?
                         <SpotifyPlayer ref={this.spotifyPlayer} apiRef={apiRef} user={user} tracks={this.props.tracks} stopSession={this.stopSession}
                             accessToken={accessToken} updateToken={updateToken} playlistRef={this.props.playlistRef}
-                            votes={voteIcons}
+                            votes={voteIcons} 
                             updateCurrentTrack={this.updateCurrentTrack}/>
                         :
-                        <GuestPlayer apiRef={apiRef} user={user} track={this.props.tracks[0]}
+                        <GuestPlayer apiRef={apiRef} user={user} track={tracks[offset]} vote={{like: false, dislike: false}}
                             accessToken={accessToken} updateToken={updateToken} vote={this.onVote}/>
                     }
                 </div>    

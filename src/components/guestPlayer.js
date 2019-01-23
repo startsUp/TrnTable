@@ -18,13 +18,14 @@ render() {
     position,
     duration
     } = this.props
+    const trackDesc = {trackName: track.content, artistName: track.subContent}
     return (
     <div className='spotify-player-container'>
         {error && <ConfirmActionPopup 
                     popupInfo={popup}/>
         }
-            <img src={track.artURL} className='track-art'/>
-            <CurrentTrack track={track}/>
+            <img src={track.albumArt[1].url} className='track-art'/>
+            <CurrentTrack track={trackDesc}/>
 
             <PlayerControls 
                 togglePlay={this.onPlayClick} 
@@ -33,6 +34,7 @@ render() {
                 playing={playing}
                 votingEnabled
                 vote={this.props.vote}
+                {...this.props}
             />
     </div>
     )

@@ -176,7 +176,7 @@ export const guestListeners = (dbRef, roomCode, initTimestamp, callback) => {
                         
                         if(doc.exists){
                     
-                            callback('votes', doc.data())
+                            callback('nowPlaying', doc.data().trackID)
                         }
                     })
 

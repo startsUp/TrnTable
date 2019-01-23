@@ -298,6 +298,7 @@ render() {
                 />
 
             <PlayerControls 
+                noVote
                 togglePlay={this.onPlayClick} 
                 next={this.onNextClick}
                 prev={this.onPrevClick}

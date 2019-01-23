@@ -15,7 +15,7 @@ class PlayerControls extends Component {
         const {vote:currentVote} = this.state
         const updatedVotes = {like: !currentVote.like && vote, 
             dislike: !currentVote.dislike && !vote}
-            
+
         this.props.vote(updatedVotes, currentVote)
         // window.clearTimeout(this.votingTimeout)
         // this.votingTimeout = window.setTimeout(()=>{
@@ -23,6 +23,12 @@ class PlayerControls extends Component {
         // }, 3000)
         await this.setState({vote:updatedVotes, update: true})
 
+    }
+    componentDidUpdate = (prevProps, prevState) => {
+        if(!this.props.noVote){
+            if(prevProps.track.id !== this.props.track.id)
+                this.setState({vote: {like: false, dislike: false}})
+        }
     }
     render(){
         const props = this.props
