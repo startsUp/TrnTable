@@ -7,7 +7,7 @@ import {ReactComponent as PlayIcon} from '../res/images/player-play.svg'
 const ListItem = props => (
     <div className='list-item'>
         <div className='list-image'>
-            <img className='list-item-image' src={props.item.iconURL}/>
+            <img className='list-item-image' alt='track art' src={props.item.iconURL}/>
         </div>
         <div className='list-content-container' onClick={() => props.contentClick(props.item)}>
             <div className='list-content'>
@@ -48,6 +48,13 @@ class List extends Component {
                 prevProps.updateTracks(prevState.selected.slice())
                 this.setState({selected: []})
             }
+            
+        }
+        if(this.props.type === 'requests' && this.state.selected.length !== 0){
+            
+            this.props.updateTracks(this.state.selected.slice(), true)
+            this.setState({selected: []})
+
         }
     }
 

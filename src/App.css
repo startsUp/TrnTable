@@ -291,8 +291,13 @@ padding: 1em 1em;
 font-size: 1.2em;
 padding: 0 1em;
 }
-.ca-popup-button{
-
+button{
+    background: none;
+    border: none;
+}
+button:focus{
+    background: none;
+    border: none;
 }
 
 /*---------------------------------------------------------- 
@@ -308,6 +313,9 @@ padding: 0 1em;
     background-color: rgba(1, 1, 1, 0.7);
     display: grid;
     grid-template-rows: 1fr 1fr;
+}
+.login-page-logo{
+    margin-top: 2em;
 }
 .login-page-title{
     padding-top: 1rem;

@@ -8,10 +8,6 @@ import speakerIcon from '../res/images/speakers.png'
 import {DefaultHostSettings} from '../components/settings'
 
 
-const Divider = props => {
-    return(<div className='divider'/>)
-}
-
 const RoomCodeCard = props => (
     <div className='room-card'>
         <div id='room-code-card'>

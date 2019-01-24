@@ -193,7 +193,7 @@ class App extends Component {
         return new Promise((resolve, reject) => {
             this.props.dbRef.collection('tracksInRoom').doc(roomCode).collection(type).orderBy('timeAdded').get()
                 .then((snapshots) => {
-                    console.log(snapshots)
+                    
                     if(snapshots.empty)
                         resolve(false)
                     else
@@ -355,8 +355,8 @@ class App extends Component {
     }
     createPlaylist = async (name, tracks) => {
         return new Promise((resolve, reject) => {
-            console.log('%c Creating Playlist', 'color: orange;font-weight: bold')
-            console.log({name, tracks})
+            
+            
 
             spotifyApi.createPlaylist(this.state.user.uid, {name: name})
                 .then((playlist) => {

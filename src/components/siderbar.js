@@ -18,9 +18,11 @@ const DashboardSidebar = props => (
                       onPlay={props.onPlay}/>
         }
         {props.view === 'Song Requests' && 
-                <List dark selectable emptyMessage='No Song Requests yet' 
+                <List dark selectable={props.host} emptyMessage='No Song Requests yet' 
+                      type='requests'
                       items={props.list}
                       contentClick={props.contentClick}
+                      {...props}
                       />
         }
         {(props.view === 'Add Songs' || props.view === 'Request Songs') &&
@@ -34,6 +36,12 @@ const DashboardSidebar = props => (
                 </div>
             )
         })}
+        {props.view !== 'Song Requests' && props.tracksToAdd && 
+            <div className='list-showmore' style={{margin: 'auto',fontSize: '0.8em', width: '11em'}}
+                                    onClick={props.addTracks}>
+                {props.host ? 'Add Selected Songs' : 'Request Selected Songs'}
+            </div>
+        }
         </div> 
     </div>
         

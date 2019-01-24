@@ -14,7 +14,6 @@ constructor(props) {
     var artURL = placeholderArt
     var albumName = ""
     var trackName = "" 
-    var id = "" 
     var artistName = ""
 
     
@@ -165,7 +164,7 @@ createEventHandlers() {
     // Ready
     this.player.on('ready', async data => {
     let { device_id } = data
-    console.log("Let the music play on!")
+    
     // set the deviceId variable, then let's try
     // to swap music playback to *our* player!
     await this.setState({ deviceId: device_id })
@@ -177,7 +176,7 @@ componentDidUpdate = (prevProps, prevState) =>{
 
 checkForPlayer() {
     
-    const { token, user } = this.state
+    const { token } = this.state
     // if the Spotify SDK has loaded
     if (window.Spotify !== null && window.Spotify !== undefined) {
     
@@ -233,7 +232,7 @@ seek = (value) => {
 
     }
     else{
-        console.log('seeking to', value, ' with duration:', duration)
+        
         this.player.seek(value * duration)
     }
     
@@ -254,7 +253,7 @@ transferPlaybackHere(shouldPlay=true) {
 }
 
 startPlaylistPlayback = (offset={position: 0}) => {
-    const { deviceId, token, playlistRef } = this.state
+    const { deviceId, playlistRef } = this.state
     this.props.apiRef.play({device_id: deviceId, context_uri: playlistRef.uri, offset: offset})    
     .then()
     .catch(err => {
@@ -270,7 +269,6 @@ startPlaylistPlayback = (offset={position: 0}) => {
 
 render() {
     const {
-    token,
     error,
     playing,
     track,

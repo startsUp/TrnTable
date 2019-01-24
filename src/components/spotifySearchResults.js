@@ -5,11 +5,11 @@ import List from './list'
 class SpotifySearchResults extends Component {
 
     componentWillUnmount = () => {
-        console.log('SEARCH UNMOUNTING')
+        
     }
     render(){
         var emptyMessage = 'No results'
-        const { tracks, albums, playlists, artists, query } = this.props.data
+        const { tracks, albums, playlists, query } = this.props.data
         return(
             <div className={this.props.small ? 'dashboard-search': 'search-results-container'} id='spotify-results-container'>
                 <div className='result-container'>

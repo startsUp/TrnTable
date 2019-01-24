@@ -36,33 +36,33 @@ class PlayerControls extends Component {
         return(
 <div className='controls-container' id={props.votingEnabled ? 'guest-controls-container': 'c'}>
         {props.votingEnabled &&
-            <div>
+            <a>
             <LikeIcon className='vote-icon' id={vote.dislike ? 'vote-select' : 'c'} onClick={() => this.handleVote(false)} style={{'transform': 'rotate(180deg)'}}/>
-            </div>
+            </a>
         }  
         {!props.votingEnabled &&
-        <div>
+        <a>
             <NextIcon onClick={props.prev} className='control-icon' style={{'transform': 'rotate(180deg)'}}/>
-        </div>
+        </a>
         }
         {!props.votingEnabled &&
-        <div>
+        <a>
             {props.playing ? 
                 <PauseIcon onClick={props.togglePlay} className='control-icon' id='pause'/>
                 :
                 <PlayIcon onClick={props.togglePlay} className='control-icon' id='play'/>
             }
-        </div> 
+        </a> 
         }
         {!props.votingEnabled &&
-        <div>
+        <a>
             <NextIcon onClick={props.next} className='control-icon' id='next'/>
-        </div> 
+        </a> 
         }  
         {props.votingEnabled &&
-            <div>
+            <a>
             <LikeIcon className='vote-icon' id={vote.like ? 'vote-select' : 'c'} onClick={() => this.handleVote(true)}/>
-            </div>
+            </a>
         }        
     </div>
         )

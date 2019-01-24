@@ -13,37 +13,6 @@ import {ReactComponent as CloseIcon} from '../res/images/dashboard-close.svg'
 import {ReactComponent as GuestsIcon} from '../res/images/dashboard-group.svg'
 import { parseData, hostListeners, guestListeners, isAlreadyInQueue, updateVote, requestTrack } from '../functions'
 import {ReactComponent as LikeIcon} from '../res/images/player-like.svg'
-// const Track = props => (
-//     // url, albumArt.url, albumName, artists
-//     <div className='track-card-container'>
-//         <div className='track-art'>
-//             <img src={props.albumArtURL}/>
-//         </div>
-//         <div className='track-info'>
-//             <div id='track-name' className='track-info-text'>{props.name}</div>
-//             <div id='track-artists' className='track-info-text'>{props.artist}</div>
-//         </div>
-//         {props.added ? 
-//             <div onClick={props.remove}> <div>➖</div> </div> : 
-//             <div onClick={props.add}> <div>➕</div> </div>
-//         }
-//     </div>
-     
-// )
-
-
-const TrackQueue = props => {
-    return(<div></div>)
-
-}
-
-const DashboardHeader = props => {
-    return(
-        <div>
-            
-        </div>
-    )
-}
 
 class Dashboard extends Component {
     constructor(props){
@@ -62,7 +31,7 @@ class Dashboard extends Component {
             sidebar: {show: false, view: 'Home'},
             view: 'normal',
             guests: this.props.guests,
-            requests: [],
+            requests: this.props.requests,
             offset: 0,
             settings: this.props.settings,
             tracksToAdd: [],
@@ -96,7 +65,7 @@ class Dashboard extends Component {
     updateVotes = (roomCode) => {
         this.props.dbRef.collection('nowPlaying').doc(roomCode).get()
             .then((snapshot) =>{
-                console.log(snapshot)
+                
                 if(snapshot.exits){
                     var data = snapshot.document.data()
                     this.setState({votes: data.votes})
@@ -178,14 +147,17 @@ class Dashboard extends Component {
     }
 
     deletePlaylist = () => {
-        const { user, playlistRef, apiRef } = this.props
-        apiRef.unfollowPlaylist(user.uid, playlistRef.id)
-                .catch(err => {
-                    if(err.status === 401){
-                        this.props.updateToken()
-                            .then(this.getSavedTracks())
-                    }
-                }) 
+        if(this.props.type === 'host'){
+            const { user, playlistRef, apiRef } = this.props
+            apiRef.unfollowPlaylist(user.uid, playlistRef.id)
+                    .catch(err => {
+                        if(err.status === 401){
+                            this.props.updateToken()
+                                .then(this.getSavedTracks())
+                        }
+                    }) 
+        }
+ 
    }
 
     stopSession = () => {
@@ -204,12 +176,24 @@ class Dashboard extends Component {
         this.props.changePage('sessionType')
     }
     
-    onRequest = (trackID, track) => {
-        console.log({trackID, track})
+
+    handleTrackAdd = async (indexes, request=false) => {
+        if(request){
+            const {requests} = this.state
+            await this.setState({tracksToAddQueue: [requests[indexes[0]]]})
+            await this.updateTracksInDB()
+            this.removeTrack(indexes[0], requests[indexes[0]])
+        }
+        else{
+            this.setState({tracksToAdd: indexes})
+        } 
     }
-    handleTrackAdd = (indexes) => {
-        console.log(indexes)
-        this.setState({tracksToAdd: indexes})
+    removeTrack = (index, track) => {
+        var updateRequests = this.state.requests.filter((track, i) => i !== index)
+        this.props.dbRef.collection('tracksInRoom').doc(this.props.roomCode)
+                        .collection('requested').doc(track.id).delete()
+                        .then(this.setState({requests: updateRequests}))
+
     }
     updateTracksInDB = async () => {
         const {tracksToAddQueue, tracks} = this.state
@@ -224,7 +208,7 @@ class Dashboard extends Component {
         }else{
             //check if songs is already requested in local queue
             const {requests} = this.state
-            console.log({tracksToAddQueue, requests})
+     
 
             tracksToAddQueue.forEach(trackToAdd=>{
                 if(requests.length > 0){
@@ -247,13 +231,15 @@ class Dashboard extends Component {
 
     }
     updateTracksToAdd = async () => {
+        
         return new Promise(async (resolve, reject)=> {
-            const {tracksToAdd, sidebar, search} = this.state
-                 //change view if show argument is true
-            if (tracksToAdd.length === 0){
+            const {tracksToAdd, search} = this.state
+        
+            if (tracksToAdd.length === 0 || !search){
                 resolve(0)
                 return
             }
+            
             await this.copySelectedTracksToQueue(search.tracks, tracksToAdd)
             await this.updateTracksInDB()
             resolve(0)
@@ -263,9 +249,10 @@ class Dashboard extends Component {
     copySelectedTracksToQueue = async (allTracks,selectedTracks) => {
         var queue = []
         var updated = this.state.tracksToAddQueue.slice()
+        
         allTracks.forEach((track, indexVal) =>{
             if(selectedTracks.indexOf(indexVal) !== -1){
-                if(!isAlreadyInQueue(track))
+                if(!isAlreadyInQueue(this.state.tracks, track))
                     queue.push(Object.assign(track))
             }
         })
@@ -288,6 +275,7 @@ class Dashboard extends Component {
                 offset,
                 sidebar,
                 search,
+                tracksToAdd,
                 votes,
                 requests,
                 settings } = this.state
@@ -296,7 +284,7 @@ class Dashboard extends Component {
                 apiRef, 
                 updateToken, 
                 accessToken } = this.props
-     console.log(requests)
+  
         const hostBarIcon = settingsView ? <CloseIcon className='dash-logo' onClick={this.toggleSettings}/> : 
                                            <SettingsIcon className='dash-logo' id='settings-logo' onClick={this.toggleSettings}/>
         const guestsIcon = <div className='dashboard-roominfo' id='guest-logo'>
@@ -334,6 +322,7 @@ class Dashboard extends Component {
                 {settingsView && <Settings endSession={this.stopSession} 
                                            close={this.toggleSettings}
                                            settings={settings}
+                                           host={host}
                                            updateSettings={this.handleSettingsChange}
                                  />
                 }
@@ -348,6 +337,8 @@ class Dashboard extends Component {
                                         show={this.show}
                                         onPlay={this.playSong}
                                         updateTracks={this.handleTrackAdd}
+                                        addTracks={this.updateTracksToAdd}
+                                        tracksToAdd={tracksToAdd.length > 0}
                                         apiRef={apiRef}/>
                 }
                 </div>

@@ -11,13 +11,6 @@ export const DefaultHostSettings = [
         type: 'boolean',
         value: false,
         default: false},
-    {id: 1,
-    desc: 'Maximum number of tracks a Guest can request.', 
-    name: 'maxRequestPerUsers',
-    type: 'dropdown', 
-    options: [5, 10, 20, 30], 
-    default: 10,
-    value: 10},
     {id: 2,
     desc: 'Maximum Users that can join your session.', 
     type: 'input',
@@ -147,7 +140,7 @@ class Settings extends Component {
     }
     render(){
 
-        const {settings, endSession} = this.props
+        const {settings, endSession, host} = this.props
         const {values, changesApplied} = this.state
         const buttonStyle = !changesApplied ? {marginRight: '1em'}:{}
         return(
@@ -155,18 +148,20 @@ class Settings extends Component {
                 <div className='settings-window'>
                     <div className='settings'>
                         <div className='sidebar-context-title' id='context-title' style={{paddingTop: '1em'}}>
-                            Settings
+                            {host ? 'Settings': 'Leave Session'}
                         </div>
-                        <div className='settings-list'>
-                                {   
-                                    settings.map((setting, index)=>{
-                                        return(settingComponent(setting, values[index], this.handleChange))
-                                    })
-                                }
-                        </div>
+                        {host &&
+                            <div className='settings-list'>
+                                    {   
+                                        settings.map((setting, index)=>{
+                                            return(settingComponent(setting, values[index], this.handleChange))
+                                        })
+                                    }
+                            </div>
+                        }
                         <div className='settings-buttons-container' >
                         <div className='list-showmore' id='setting-end-button' onClick={endSession} style={buttonStyle}>
-                            End Session
+                            {host ? 'End Session' : 'Leave Session'}
                         </div>
                         {!changesApplied && 
                             <div className='list-showmore' id='setting-end-button' style={{marginLeft: '1em'}}

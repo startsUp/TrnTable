@@ -85,6 +85,7 @@ class ProgressBar extends Component{
                 background: WHITE_SMOKE,
                 transition: direction === Direction.HORIZONTAL ? 'width 0.1s' : 'height 0.1s',
                 cursor: isEnabled === true ? 'pointer' : 'default',
+                margin: '0 auto'
             }}
             >
             <SliderBar direction={direction} value={value} style={{ background: isEnabled ? GREEN : GRAY }} />

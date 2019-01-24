@@ -4,7 +4,7 @@ export const parseData = (dataType, data, albumRef=null) => {
     if(dataType === 'songs' || dataType === 'albumSongs')
     {
         
-        console.log('Data', data)
+        
         var tracks = []
         data.items.forEach(item => { 
             var track = item.track ? item.track : item
@@ -90,7 +90,7 @@ export const parseData = (dataType, data, albumRef=null) => {
 export const hostListeners = (dbRef, roomCode, initTimestamp, callback) => {
     var requests = dbRef.collection('tracksInRoom').doc(roomCode).collection('requested').orderBy('timeAdded').startAt(initTimestamp)
                 .onSnapshot((snapshot) => {
-                    console.log(snapshot)
+                    
                     snapshot.docChanges().forEach((change) => {
                         if (change.type === "added") {
                             var doc = change.doc
@@ -106,7 +106,7 @@ export const hostListeners = (dbRef, roomCode, initTimestamp, callback) => {
                 })
     var users = dbRef.collection('rooms').doc(roomCode).collection('users').orderBy('joinedTimestamp').startAt(initTimestamp)
                     .onSnapshot((snapshot) => {
-                        console.log(snapshot)
+                        
                         snapshot.docChanges().forEach((change) => {
                             if (change.type === "added") {
                                 var doc = change.doc
@@ -138,7 +138,7 @@ export const hostListeners = (dbRef, roomCode, initTimestamp, callback) => {
 export const guestListeners = (dbRef, roomCode, initTimestamp, callback) => {
     var requests = dbRef.collection('tracksInRoom').doc(roomCode).collection('requested').orderBy('timeAdded').startAt(initTimestamp)
                 .onSnapshot((snapshot) => {
-                    console.log(snapshot)
+                    
                     snapshot.docChanges().forEach((change) => {
                         if (change.type === "added") {
                             var doc = change.doc
@@ -154,7 +154,7 @@ export const guestListeners = (dbRef, roomCode, initTimestamp, callback) => {
                 })
     var users = dbRef.collection('rooms').doc(roomCode).collection('users').orderBy('joinedTimestamp').startAt(initTimestamp)
                     .onSnapshot((snapshot) => {
-                        console.log(snapshot)
+                        
                         snapshot.docChanges().forEach((change) => {
                             if (change.type === "added") {
                                 var doc = change.doc
@@ -173,7 +173,7 @@ export const guestListeners = (dbRef, roomCode, initTimestamp, callback) => {
 
     var queue = dbRef.collection('tracksInRoom').doc(roomCode).collection('tracks').orderBy('timeAdded').startAt(initTimestamp)
         .onSnapshot((snapshot) => {
-            console.log(snapshot)
+            
             snapshot.docChanges().forEach((change) => {
                 if (change.type === "added") {
                     var doc = change.doc
@@ -290,7 +290,7 @@ export const updateVote = (dbRef, roomCode, vote, prevVote) => {
             }
         })
         }).then((votes)=> {
-            console.log({votes: votes})
+            
         }).catch((err) =>{
             console.error(err)
         })
@@ -298,7 +298,7 @@ export const updateVote = (dbRef, roomCode, vote, prevVote) => {
 
 export const requestTrack = (dbRef, roomCode, track) => {
     
-    console.log('request to db')
+    
     var requestedTracks = dbRef.collection('tracksInRoom').doc(roomCode)
                                 .collection('requested').doc(track.id)
 
@@ -312,7 +312,7 @@ export const requestTrack = (dbRef, roomCode, track) => {
 
         })
         }).then((votes)=> {
-            console.log({votes: votes})
+            
         }).catch((err) =>{
             console.error(err)
         })

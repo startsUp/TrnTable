@@ -8,17 +8,12 @@ import {ReactComponent as LoadingIcon} from '../res/images/loading.svg'
 import {ReactComponent as QueueIcon} from '../res/images/twotone-playlist_add-24px.svg'
 import {ReactComponent as StartIcon} from '../res/images/import-done.svg'
 import ConfirmActionPopup from '../components/confirmPopup'
-import Header from '../components/header'
 import SpotifySearch from '../components/spotifySearch'
 import SpotifySearchResults from '../components/spotifySearchResults'
 import { parseData, getViewDescription, isAlreadyInQueue } from '../functions'
 
 //A SearchResultSection can be used to show track, album and artist results
 
-
-const Divider = props => {
-	return(<div className='divider' id={props.id} style={props.customStyle}/>)
-}
 
 const UserLibraryButton = props => (
     <div className='import-library-button' id={props.selected ? 'active':''} onClick={()=> props.showLibrary(props.id)}>
@@ -94,7 +89,7 @@ class ImportTrack extends Component {
 	}
 	
     componentDidMount = () => {
-        console.log('getting tracks')
+        
         this.getSavedTracks()    
     }
 
