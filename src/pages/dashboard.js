@@ -4,6 +4,7 @@ import appIcon from '../res/images/logo.webp'
 import SpotifyPlayer from '../components/spotifyPlayer'
 import GuestPlayer from '../components/guestPlayer'
 import HostBar from '../components/hostbar'
+import ConfirmActionPopup from '../components/confirmPopup.js'
 import Settings, {newSettings} from '../components/settings'
 import AppLogo from '../components/logo'
 import DashboardSidebar from '../components/siderbar'
@@ -117,6 +118,9 @@ class Dashboard extends Component {
         })
     }
 
+    showError = (error, popup) => { 
+        this.setState({error: error, popup: popup})
+    }
     show = async (option) => { 
         const {sidebar}=this.state
         this.setState({sidebar: {...sidebar, view: option}})
@@ -277,6 +281,8 @@ class Dashboard extends Component {
                 search,
                 tracksToAdd,
                 votes,
+                error,
+                popup,
                 requests,
                 settings } = this.state
         const { roomCode, 
@@ -310,6 +316,9 @@ class Dashboard extends Component {
         
         return (
             <div className='dashboard-container'>
+                    {error && <ConfirmActionPopup 
+                    popupInfo={popup}/>
+                    }
                 <HostBar dark={settingsView} roomCode={roomCode} 
                             title={ host ? ` ${user.displayName}'s Session` :
                                 'TrnTable Session'}
@@ -349,7 +358,7 @@ class Dashboard extends Component {
                     {host ?
                         <SpotifyPlayer ref={this.spotifyPlayer} apiRef={apiRef} user={user} tracks={this.props.tracks} stopSession={this.stopSession}
                             accessToken={accessToken} updateToken={updateToken} playlistRef={this.props.playlistRef}
-                            votes={voteIcons} 
+                            votes={voteIcons} onError={this.showError}
                             updateCurrentTrack={this.updateCurrentTrack}/>
                         :
                         <GuestPlayer apiRef={apiRef} user={user} track={tracks[offset]} vote={{like: false, dislike: false}}

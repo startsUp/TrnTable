@@ -27,7 +27,8 @@ const ConfirmActionPopup = props => (
             </div>
             <div id='ca-popup-action'>
                 <div className='popup-button' id='ca-popup-button' onClick={props.popupInfo.onAccept}>{props.popupInfo.accept}</div>
-                <div className='popup-button' id='ca-popup-button' onClick={props.popupInfo.onDeny}>{props.popupInfo.deny}</div>
+                {props.popupInfo.deny && <div className='popup-button' 
+                    id='ca-popup-button' onClick={props.popupInfo.onDeny}>{props.popupInfo.deny}</div>}
             </div>
         </div>
         

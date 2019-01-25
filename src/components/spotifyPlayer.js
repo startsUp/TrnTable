@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import '../App.css'
 import CurrentTrack from './track'
 import PlayerControls from './playerControls'
-import ConfirmActionPopup from './confirmPopup.js'
+
 import placeholderArt from '../res/images/placeholderTrackImage.png'
 import ProgressBar from './progressBar'
 import { Direction } from 'react-player-controls'
@@ -53,20 +53,14 @@ constructor(props) {
 
 // when we click the "go" button
 componentDidMount = () => {
+    this.pollPlayer()
+    
+}
+
+pollPlayer = () => {
     this.playerCheckInterval = setInterval(() => this.checkForPlayer(), 1000)
 }
 
-    
-// updateTrackForGuests = () => {
-//     this.props.dbRef
-//                 .collection('rooms')
-//                 .doc(this.props.roomCode)
-//                 .collection('nowPlaying')
-//                 .doc('track')
-//                 .set({
-//                     track: this.state.track
-//                 })
-// }
 
 // when we receive a new update from the player
 onStateChanged(playerState) {
@@ -79,9 +73,12 @@ onStateChanged(playerState) {
  
     const {position, duration} = playerState
     this.setState({position: position})
-    if(this.state.error){
+    
+    if(this.state.error !== 'playback'){
         this.setState({error: ""})
+        this.props.onError('', {})
     }
+
     
     const playing = !playerState.paused
 
@@ -113,15 +110,18 @@ onStateChanged(playerState) {
                     duration: duration})
     } else {
     // state was null, user might have swapped to another device
-        this.setState({error: 'Switched Devices',popup: {show: true, 
+        const error = 'Switched Devices' 
+        const popup = {show: true, 
             title: '⚠Player Error', 
             message: 'Spotify Player Interrupted! Looks like you might have switched to another device.',
             accept: 'Resume Session',
             deny: 'Stop Session',
-            onAccept: this.transferPlaybackHere,
+            onAccept: () => this.transferPlaybackHere(true, this.state.deviceId),
             onDeny: this.props.stopSession,
             modal: true,
-        }})
+        }
+        this.props.onError(error, popup)
+        this.setState({error: error})
 
     }
 }
@@ -151,12 +151,23 @@ createEventHandlers() {
     // or it expired (it lasts one hour)
     this.player.on('authentication_error', e => {
         this.props.updateToken()
-        console.trace(e)
+        this.pollPlayer()
     })
     // currently only premium accounts can use the API
     this.player.on('account_error', e => { console.trace(e) })
     // loading/playing the track failed for some reason
-    this.player.on('playback_error', e => { console.trace(e) })
+    this.player.on('playback_error', e => {
+        const error = 'playback' 
+        const popup =  {show: true, 
+            title: '⚠Playback Error', 
+            message: 'Connection Interrupted',
+            accept: 'Reload Player',
+            onAccept: ()=> window.location.reload(),
+            modal: true}
+        this.props.onError(error, popup)
+        this.setState({error: error})
+
+     })
 
     // Playback status updates
     this.player.on('player_state_changed', state => this.onStateChanged(state))
@@ -199,7 +210,7 @@ checkForPlayer() {
 onPrevClick = ()=> {
     if(this.state.track.id === "" || this.state.error){
         this.startPlaylistPlayback()
-        this.setState({error: ""})
+  
         
     }
     else
@@ -209,7 +220,7 @@ onPrevClick = ()=> {
 onPlayClick = () => {
     if(this.state.track.id === "" || this.state.error){
         this.startPlaylistPlayback()
-        this.setState({error: ""})
+     
     }
     else
         this.player.togglePlay()
@@ -218,7 +229,7 @@ onPlayClick = () => {
 onNextClick = () => {
     if(this.state.track.id === "" || this.state.error){
         this.startPlaylistPlayback()
-        this.setState({error: ""})
+
   
     }
     else
@@ -228,7 +239,7 @@ seek = (value) => {
     const { track, error, duration } = this.state
     if(track.id === "" || error){
         this.startPlaylistPlayback()
-        this.setState({error: ""})
+        
 
     }
     else{
@@ -238,8 +249,11 @@ seek = (value) => {
     
 }
 
-transferPlaybackHere(shouldPlay=true) {
-    const { deviceId } = this.state
+transferPlaybackHere(shouldPlay=true, deviceID=null) {
+    var deviceId = deviceID
+    if (!deviceID){
+        deviceId = this.state.deviceId
+    }
     // https://beta.developer.spotify.com/documentation/web-api/reference/player/transfer-a-users-playback/
     this.props.apiRef.transferMyPlayback([deviceId], {play: shouldPlay})
         .catch(err => {
@@ -281,9 +295,7 @@ render() {
    
     return (
     <div className='spotify-player-container'>
-        {error && <ConfirmActionPopup 
-                    popupInfo={popup}/>
-        }
+
          {this.props.votes}
             <img src={track.artURL} className='track-art'/>
             <CurrentTrack track={track}/>

@@ -20,6 +20,13 @@ export const DefaultHostSettings = [
     max: 300,  
     value: 50,
     default: 50},
+    {id: 3,
+        desc: 'Allow users to directly add songs to the queue.', 
+        type: 'input',
+        name: 'addTracksToQueue',
+        type: 'boolean',
+        value: false,
+        default: false},
 ]
 
 export const newSettings = (settings) => {

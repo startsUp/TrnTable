@@ -33,28 +33,20 @@ class App extends Component {
             window.history.replaceState(null, null, ' ')
             spotifyApi.setAccessToken(token)
         }
-        var landingPage = 'sessionType'
-        const playerTesting = false
-        var sessionType = null
-        var roomRef = null
-        if(playerTesting){
-             landingPage = 'trackImport'
-             roomRef = 'E1GM'
-             sessionType = 'host'
-        }
+        
 		this.state = {
             loggedIn: token ? true : false,
             page:'loading', //original : sType, login
-            roomRef: roomRef, //temp room for testing
+            roomRef: null, //temp room for testing
             user: null, 
             token: token,
-            landingPage: landingPage,
+            landingPage: 'sessionType',
             firebaseToken: firebaseToken,
             refreshToken: refreshToken,
             queue: [], 
             requests: [],
             guests: [],
-            sessionType: sessionType,
+            sessionType: null,
             loading: '',
             playlistRef: null,
             settings: DefaultHostSettings 
@@ -81,6 +73,7 @@ class App extends Component {
                 
                 if(this.state.token){
                     var res = await this.getUserInfo()
+                
                     this.showLandingPage(res)
                 }
                 else{
@@ -94,11 +87,30 @@ class App extends Component {
             }
         })
     }
+    getSpotifyInfo = async () => {
+        return new Promise((resolve, reject) => {
+            spotifyApi.getMe()
+            .then((data)=>{
+                resolve(data)
+            })
+            .catch(err => {                                                         
+                if(err.status === 401){
+                    this.refreshAccessToken()
+                        .then(this.getSpotifyInfo())
+                }
+                else{
+                    reject(err)
+                }
+            }) 
+        })
+        
+    }
   
     showLandingPage = async (res) => {
 
         if(!res){
-            this.setState({page: this.state.landingPage})
+            var spotifyData = await this.getSpotifyInfo()
+            this.setState({page: this.state.landingPage, spotifyData: spotifyData})
             return
         }
       
@@ -108,6 +120,7 @@ class App extends Component {
             var tracks = await this.getSessionTracks(res.room)
             var requests = await this.getSessionTracks(res.room, 'requested')
             var guests = await this.getGuests(res.room)
+            
             this.setState({
                 page: 'dashboard',
                 playlistRef: res.playlistRef,
@@ -282,8 +295,14 @@ class App extends Component {
                                playlistRef: roomInfo.playlistRef})
             }
         }  
-        else
-            this.setState({page: nextPage})  
+        else{
+            if(nextPage === 'sessionType' && !this.state.spotifyData){
+                var spotifyData = await this.getSpotifyInfo()
+                await this.setState({spotifyData: spotifyData})
+            }
+            this.setState({page: nextPage}) 
+        }
+             
     }
     getDate = () => {
         var monthNames = [
@@ -400,12 +419,13 @@ class App extends Component {
 
     var page = <LoadingScreen message={this.state.loading}/>
     const currentPage = this.state.page
-    const { user, sessionType, queue, playlistRef, requests, guests} = this.state
+    const { user, sessionType, queue, playlistRef, requests, guests, spotifyData} = this.state
     if(currentPage === 'sessionType') 
         page = <SessionType dbRef={this.props.dbRef} changePage={this.changePage} 
                             getSessionTracks={this.getSessionTracks}
                             setQueue={this.setQueue}
                             setGuests={this.setGuests}
+                            spotifyData={spotifyData}
                             user={user} setRoomCode={this.setRoomCode}/>
     else if(currentPage === 'dashboard') 
         page = <Dashboard user={user} firebase={this.props.firebase} 
