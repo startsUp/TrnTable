@@ -452,6 +452,8 @@ grid-template-rows: 12vh 6vh 82vh;
     margin: auto;
     justify-content: center;
     align-items: center;
+    margin-top: 1.5em;
+
 }
 .session-header{
     margin: 1em auto;

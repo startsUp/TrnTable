@@ -442,7 +442,7 @@ class App extends Component {
                 settings={this.state.settings}/>
     else if(currentPage === 'trackImport') 
         page = <ImportTrack roomCode={this.state.roomRef} user={user} apiRef={spotifyApi}
-                roomCode={this.state.roomRef} changePage={this.changePage}
+                changePage={this.changePage}
                 updateToken={this.refreshAccessToken}/>
     else if(currentPage === 'login')
         page =  <Login/>

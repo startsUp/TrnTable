@@ -1,4 +1,4 @@
-import placeholderIcon from './res/images/spotifyIcon.png'
+import placeholderIcon from './res/images/logo-svg.png'
 import { reject } from 'q';
 export const parseData = (dataType, data, albumRef=null) => {
     if(dataType === 'songs' || dataType === 'albumSongs')

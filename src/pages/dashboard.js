@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import '../App.css'
-import appIcon from '../res/images/logo.webp'
 import SpotifyPlayer from '../components/spotifyPlayer'
 import GuestPlayer from '../components/guestPlayer'
 import HostBar from '../components/hostbar'

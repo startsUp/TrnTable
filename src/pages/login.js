@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import '../App.css'
-import icon from '../res/images/logo.webp'
 import AppLogo from '../components/logo'
 class Login extends Component {
     render() {
