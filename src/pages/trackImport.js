@@ -174,22 +174,39 @@ class ImportTrack extends Component {
         })
 		
     }
+
     confirmAction = async (type) => {
         if(type === 'startSession')
         {
             await this.updateQueue(false)
-            this.setState({popup: {show: true, 
+            if(this.state.queue.length === 0){
+                this.setState({popup: {show: true, 
                 type: type, 
-                title: 'Done Importing?', 
-                message: 'You\'ve added ' + this.state.queue.length + ' songs to the \
-                 queue. Do you want to start the TrnTable session or keep importing songs? (Note: \
-                 you can still add songs once the session has started.)',
-                accept: 'Start Session',
-                deny: 'Continue Importing',
-                onAccept: this.startSession,
+                title: 'No Songs Imported!', 
+                message: 'Can\'t start a party without any songs.', 
+                accept: 'Auto fill',
+                deny: 'Go Back',
+                onAccept: this.startWithTopSongs,
 				onDeny: this.closePopup,
 				close: this.closePopup,
               }})
+            }
+            else {
+                this.setState({popup: {show: true, 
+                    type: type, 
+                    title: 'Done Importing?', 
+                    message: 'You\'ve added ' + this.state.queue.length + ' songs to the \
+                     queue. Do you want to start the TrnTable session or keep importing songs? (Note: \
+                     you can still add songs once the session has started.)',
+                    accept: 'Start Session',
+                    deny: 'Continue Importing',
+                    onAccept: this.startSession,
+                    onDeny: this.closePopup,
+                    close: this.closePopup,
+                  }})
+            }
+
+         
         }
             
     }
@@ -211,6 +228,20 @@ class ImportTrack extends Component {
 
 
     }
+    startWithTopSongs = () => {
+        this.props.apiRef.getMyTopTracks({limit: 50})
+            .then(data => {
+                this.props.changePage('dashboard', parseData('songs', data))
+            })
+            .catch(err => {
+                console.log(err)
+                if(err.status === 401){
+                    this.props.updateToken()
+                        .then(this.startWithTopSongs())
+                }
+            }) 
+
+    }
 
     startSession = () => {
         this.props.changePage('dashboard', this.state.queue)
@@ -230,7 +261,7 @@ class ImportTrack extends Component {
                 this.setState({view: 'loading'})
                 this.props.apiRef.getMySavedTracks({offset: this.state.savedSongsOffset, limit:50})
                 .then(data =>{
-                    this.setState({userSavedSongs: parseData(type, data), 
+                    this.setState({userSavedSongs: [...this.state.userSavedSongs, ...parseData(type, data)], 
                         savedSongsOffset: this.savedSongsOffset+50, view:'songs', totalSavedSongs: data.total})
                     
                 })
@@ -253,7 +284,7 @@ class ImportTrack extends Component {
                 this.props.apiRef.getUserPlaylists({offset: this.state.playlistOffset, limit:50})
                                 .then(data =>{
                                     
-                                    this.setState({userPlaylists: parseData(type, data), 
+                                    this.setState({userPlaylists: [...this.state.userPlaylists, ...parseData(type, data)], 
                                         playlistOffset: this.playlistOffset+50,view:'playlist',
                                         totalSavedPlaylist:data.total}
                                     )
@@ -274,7 +305,7 @@ class ImportTrack extends Component {
                 this.setState({view:'loading'})
                 this.props.apiRef.getMySavedAlbums({offset: this.state.albumOffset, limit:50})
                                 .then(data =>{
-                                    this.setState({userAlbums: parseData(type, data), view:'albums',
+                                    this.setState({userAlbums: [...this.state.userAlbums,...parseData(type, data)], view:'albums',
                                         albumOffset: this.albumOffset+50, totalSavedAlbums: data.total}
                                     )
                                 })

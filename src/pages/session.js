@@ -76,10 +76,7 @@ class SessionType extends Component {
         }
         return text;
     }
-    getOS = () => {
-        
-      }
-      
+
     isHostingPossible = () => {
 
         var isMobileOrTablet = this.mobileAndTabletcheck()
@@ -102,11 +99,11 @@ class SessionType extends Component {
         if(session === 'host' && this.state.error==='' && this.props.spotifyData.product === 'premium' && this.isHostingPossible()){
             roomCode = this.generateRandomString(4)
         }
-        else{
+        else if(session === 'host'){
             const error = 'hosting' 
             const popup = {show: true, 
                 title: 'Hosting not Supported!', 
-                message: 'Hosting sessions requires a spotify premium and a desktop browser (excluding safari).',
+                message: 'Hosting sessions requires a Spotify premium account and a desktop browser (excluding safari).',
                 accept: 'Okay',
                 onAccept: () => this.setState({popup: {show: false}}),
                 modal: true,
@@ -180,13 +177,13 @@ class SessionType extends Component {
 
         // check if the room exists 
 
-        if(this.state.sessionType === 'host' && this.state.error!==''){
+        if(this.state.sessionType === 'host' && this.state.error===''){
             if (this.state.roomCode){
                 this.props.setRoomCode(this.state.roomCode, true)
                 this.props.changePage('trackImport')
             }
+            return
         }
-            
         else
         {
             var roomCode = room.toUpperCase()
