@@ -27,6 +27,11 @@ overflow: hidden;
 #record-label{
 animation: App-logo-spin infinite 2s linear;
 }
+#info-icon{
+    position: absolute;
+    right: 0;
+    margin: 0.5em;
+}
 
 .loading-logo {
     height: 6rem;
