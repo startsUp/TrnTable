@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "jukebox-2952e"
+  },
+  "targets": {
+    "jukebox-2952e": {
+      "hosting": {
+        "react": [
+          "trntable"
+        ]
+      }
+    }
+  }
+}
