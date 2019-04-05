@@ -87,15 +87,19 @@ class Dashboard extends Component {
     }
     handleNewData = (type, data) => { 
 
-        const {guests, requests, tracks} = this.state
+        const {guests, requests, tracks, tracksToAddQueue} = this.state
         if(type === 'guest')
             this.setState({guests: [...guests, data]})
         else if(type === 'votes')
             this.setState({votes: data})
         else if(type === 'queue')
             this.setState({tracks: [...tracks, data.track]})
-        else if(type === 'request')
+        else if(type === 'request'){
             this.setState({requests: [...requests, data.track]})
+            this.setState({tracksToAddQueue: [...tracksToAddQueue, data.track]})
+            this.updateTracksInDB()
+        }
+            
         else if(type === 'nowPlaying'){
             this.checkOffset = window.setInterval(()=>this.setOffset(data), 2000)
         }
@@ -203,10 +207,11 @@ class Dashboard extends Component {
         if(this.props.type === 'host'){
             await this.props.addMultipleTracks(tracksToAddQueue)
             const trackURIs = tracksToAddQueue.map(track => track.uri)
+            console.log({songsAdding: tracksToAddQueue})
             await this.props.importTracksToPlaylist(this.props.user.uid, 
                                 this.props.playlistRef.id, trackURIs, 0)
             
-            this.setState({tracks: [...tracks, ...tracksToAddQueue.slice()], tracksToAddQueue: [], tracksToAdd:[]})
+            this.setState({tracks: [...tracks, ...tracksToAddQueue.slice()], requests: [], tracksToAddQueue: [], tracksToAdd:[]})
             
         }else{
             //check if songs is already requested in local queue
