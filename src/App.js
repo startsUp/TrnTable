@@ -24,25 +24,17 @@ const LoadingScreen = props => (
 class App extends Component {
     constructor(props){
 		super(props)
-		const params = this.getHashParams()
-        const firebaseToken = params.token
-        const token = params.access_token
-        const refreshToken = params.refresh_token
-        
-		if (token) {
-            window.history.replaceState(null, null, ' ')
-            spotifyApi.setAccessToken(token)
-        }
+		
         
 		this.state = {
-            loggedIn: token ? true : false,
+            loggedIn: false,
             page:'loading', //original : sType, login
             roomRef: null, //temp room for testing
             user: null, 
-            token: token,
+            token: null,
             landingPage: 'sessionType',
-            firebaseToken: firebaseToken,
-            refreshToken: refreshToken,
+            firebaseToken: null,
+            refreshToken: null,
             queue: [], 
             requests: [],
             guests: [],
@@ -53,39 +45,60 @@ class App extends Component {
         }
       
     }
-    componentDidMount = () => {
-        
-        const {firebaseToken} = this.state
-        if(firebaseToken){
-            this.props.firebase
+
+    popupCallback = async (tokens) => { 
+        const { firebaseToken, accessToken, refreshToken } = tokens 
+        spotifyApi.setAccessToken(accessToken)
+        await this.setState({firebaseToken: firebaseToken, 
+                        token: accessToken,
+                        refreshToken: refreshToken})
+        this.signIn(firebaseToken)
+    }
+    
+    signIn = firebaseToken => {
+        this.props.firebase
                 .auth()
                 .signInWithCustomToken(firebaseToken)
                 .catch(err=> console.log(err))
+    }
+
+    componentDidMount = () => {
+               
+        
+
+        if(window.opener){ 
+            const params = this.getHashParams()
+            const firebaseToken = params.token
+            const accessToken = params.access_token
+            const refreshToken = params.refresh_token
+            
+            
+            window.opener.postMessage({firebaseToken, accessToken, refreshToken}, '*')
+        }
+        else{
+            this.props.firebase.auth().onAuthStateChanged(async (user)=>{
+                if(user){
+                    
+                    this.setState({user: user, loading: 'Signing In ...'})
+                    // get access token and refresh token
+                    
+                    if(this.state.token){
+                        var res = await this.getUserInfo()
+                    
+                        this.showLandingPage(res)
+                    }
+                    else{
+                        await this.refreshAccessToken(user)
+                        var res = await this.getUserInfo()
+                        this.showLandingPage(res)
+                    }
+                }
+                else if (!this.state.firebaseToken){
+                   this.setState({page: 'login'})
+                }
+            })    
         }
         
-        
-        
-        this.props.firebase.auth().onAuthStateChanged(async (user)=>{
-            if(user){
-                
-                this.setState({user: user, loading: 'Signing In ...'})
-                // get access token and refresh token
-                
-                if(this.state.token){
-                    var res = await this.getUserInfo()
-                
-                    this.showLandingPage(res)
-                }
-                else{
-                    await this.refreshAccessToken(user)
-                    var res = await this.getUserInfo()
-                    this.showLandingPage(res)
-                }
-            }
-            else if (!this.state.firebaseToken){
-               this.setState({page: 'login'})
-            }
-        })
     }
     getSpotifyInfo = async () => {
         return new Promise((resolve, reject) => {
@@ -445,7 +458,7 @@ class App extends Component {
                 changePage={this.changePage}
                 updateToken={this.refreshAccessToken}/>
     else if(currentPage === 'login')
-        page =  <Login/>
+        page =  <Login callback={this.popupCallback}/>
     
     return (
       <div className='App'>
